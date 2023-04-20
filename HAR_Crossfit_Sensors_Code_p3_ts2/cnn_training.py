@@ -38,12 +38,13 @@ if args.gpus:
 import tensorflow as tf
 import keras
 from keras import Sequential, Input, Model
-from keras.layers import Activation, Flatten, Dropout, Dense, Convolution2D, K, BatchNormalization
-from keras.optimizers import SGD
-from keras.utils import np_utils, multi_gpu_model
+from keras import backend as K
+from keras.layers import Activation, Flatten, Dropout, Dense, Convolution2D, BatchNormalization
+from tensorflow.keras.optimizers import SGD
+from keras.utils import np_utils
 
 from data_loading import get_grouped_windows_for_exerices, get_grouped_windows_for_rep_transistion_per_exercise
-from keras.backend.tensorflow_backend import set_session
+from keras.backend import set_session
 
 tf_config = tf.compat.v1.ConfigProto()
 tf_config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
@@ -181,7 +182,7 @@ def rep_counting_model(input_shape,
 
         conv_output = Convolution2D(filters=filters[i], kernel_size=kernel_size, strides=strides,
                                     input_shape=input_shape,
-                                    border_mode='same',
+                                    padding='same',
                                     data_format="channels_last")(input)
         act = Activation(activation_fun)(conv_output)
         if batch_normalization:
@@ -240,7 +241,7 @@ def model_I(input_shape,
     model.add(
         Convolution2D(filters=conv_layer_1_filters, kernel_size=first_layer_kernel_size, strides=first_layer_strides,
                       input_shape=input_shape,
-                      border_mode='same',
+                      padding='same',
                       data_format="channels_last"))
     model.add(Activation(activation_function))
     if with_batch_normalization:
@@ -248,7 +249,7 @@ def model_I(input_shape,
     if with_dropout:
         model.add(Dropout(dropout_1))
     model.add(Convolution2D(filters=conv_layer_2_filters, kernel_size=(15, 18), strides=(3, 1), input_shape=input_shape,
-                            border_mode='same',
+                            padding='same',
                             data_format="channels_last"))
     model.add(Activation('relu'))
     if with_batch_normalization:
@@ -256,7 +257,7 @@ def model_I(input_shape,
     if with_dropout:
         model.add(Dropout(dropout_2))
     model.add(Convolution2D(filters=conv_layer_3_filters, kernel_size=(15, 18), strides=(3, 1), input_shape=input_shape,
-                            border_mode='same',
+                            padding='same',
                             data_format="channels_last"))
     model.add(Activation(activation_function))
     if with_batch_normalization:
@@ -264,7 +265,7 @@ def model_I(input_shape,
     if with_dropout:
         model.add(Dropout(dropout_3))
     model.add(Convolution2D(filters=conv_layer_4_filters, kernel_size=(15, 18), strides=(3, 1), input_shape=input_shape,
-                            border_mode='same',
+                            padding='same',
                             data_format="channels_last"))
     model.add(Activation(activation_function))
     if with_batch_normalization:
@@ -272,7 +273,7 @@ def model_I(input_shape,
     if with_dropout:
         model.add(Dropout(dropout_4))
     model.add(Convolution2D(filters=conv_layer_5_filters, kernel_size=(15, 18), strides=(3, 1), input_shape=input_shape,
-                            border_mode='same',
+                            padding='same',
                             data_format="channels_last"))
     model.add(Activation(activation_function))
     if with_batch_normalization:
@@ -319,7 +320,7 @@ def model_I_experiment(input_shape,
     model.add(
         Convolution2D(filters=conv_layer_1_filters, kernel_size=kernel_size, strides=strides,
                       input_shape=input_shape,
-                      border_mode='same',
+                      padding='same',
                       data_format="channels_last"))
     model.add(Activation(activation_function))
     if dropout:
@@ -327,7 +328,7 @@ def model_I_experiment(input_shape,
     model.add(
         Convolution2D(filters=25, kernel_size=kernel_size, strides=strides,
                       input_shape=input_shape,
-                      border_mode='same',
+                      padding='same',
                       data_format="channels_last"))
     model.add(Activation(activation_function))
     if batch_normalization:
@@ -336,7 +337,7 @@ def model_I_experiment(input_shape,
         model.add(Dropout(dropout_2))
 
     model.add(Convolution2D(filters=75, kernel_size=kernel_size, strides=(3, 1), input_shape=input_shape,
-                            border_mode='same',
+                            padding='same',
                             data_format="channels_last"))
     model.add(Activation(activation_function))
     if batch_normalization:
@@ -345,7 +346,7 @@ def model_I_experiment(input_shape,
         model.add(Dropout(dropout_3))
 
     model.add(Convolution2D(filters=75, kernel_size=kernel_size, strides=(3, 1), input_shape=input_shape,
-                            border_mode='same',
+                            padding='same',
                             data_format="channels_last"))
     model.add(Activation(activation_function))
     if batch_normalization:
@@ -354,7 +355,7 @@ def model_I_experiment(input_shape,
         model.add(Dropout(dropout_3))
 
     model.add(Convolution2D(filters=25, kernel_size=kernel_size, strides=(3, 1), input_shape=input_shape,
-                            border_mode='same',
+                            padding='same',
                             data_format="channels_last"))
     model.add(Activation(activation_function))
     if batch_normalization:

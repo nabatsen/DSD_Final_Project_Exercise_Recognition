@@ -2,7 +2,7 @@ import os
 import re
 import sqlite3
 
-from keras.engine.saving import load_model
+from keras.models import load_model
 from scipy.stats import mode
 
 from constants import numpy_exercises_data_path, EXERCISE_NAME_TO_CLASS_LABEL, numpy_reps_data_path, unconstrained_workout_data_path, \

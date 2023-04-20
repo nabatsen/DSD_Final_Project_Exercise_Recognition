@@ -1,0 +1,5 @@
+tensorflow=*=*cuda*
+numpy
+scikit-learn
+psutil
+pyyaml

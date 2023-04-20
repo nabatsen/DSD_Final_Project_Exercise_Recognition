@@ -1,0 +1,152 @@
+TensorFlow 2.0 Upgrade Script
+-----------------------------
+Converted 14 files
+Detected 10 issues that require attention
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+File: HAR_Crossfit_Sensors_Code_p3/cnn_training.py
+--------------------------------------------------------------------------------
+HAR_Crossfit_Sensors_Code_p3/cnn_training.py:592:4: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+HAR_Crossfit_Sensors_Code_p3/cnn_training.py:741:12: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+HAR_Crossfit_Sensors_Code_p3/cnn_training.py:831:12: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+HAR_Crossfit_Sensors_Code_p3/cnn_training.py:832:12: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+HAR_Crossfit_Sensors_Code_p3/cnn_training.py:833:12: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+HAR_Crossfit_Sensors_Code_p3/cnn_training.py:860:4: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+HAR_Crossfit_Sensors_Code_p3/cnn_training.py:881:4: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+--------------------------------------------------------------------------------
+File: HAR_Crossfit_Sensors_Code_p3/preprocessing.py
+--------------------------------------------------------------------------------
+HAR_Crossfit_Sensors_Code_p3/preprocessing.py:130:4: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+HAR_Crossfit_Sensors_Code_p3/preprocessing.py:140:4: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+--------------------------------------------------------------------------------
+File: HAR_Crossfit_Sensors_Code_p3/unconstrained_workout_evaluation.py
+--------------------------------------------------------------------------------
+HAR_Crossfit_Sensors_Code_p3/unconstrained_workout_evaluation.py:172:16: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+================================================================================
+Detailed log follows:
+
+================================================================================
+================================================================================
+Input tree: 'HAR_Crossfit_Sensors_Code_p3'
+================================================================================
+--------------------------------------------------------------------------------
+Processing file 'HAR_Crossfit_Sensors_Code_p3/cnn_training.py'
+ outputting to 'HAR_Crossfit_Sensors_Code_p3_ts2/cnn_training.py'
+--------------------------------------------------------------------------------
+
+48:12: INFO: Renamed 'tf.ConfigProto' to 'tf.compat.v1.ConfigProto'
+50:7: INFO: Renamed 'tf.Session' to 'tf.compat.v1.Session'
+592:4: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+741:12: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+831:12: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+832:12: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+833:12: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+860:4: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+881:4: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'HAR_Crossfit_Sensors_Code_p3/constants.py'
+ outputting to 'HAR_Crossfit_Sensors_Code_p3_ts2/constants.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'HAR_Crossfit_Sensors_Code_p3/data_features_extraction.py'
+ outputting to 'HAR_Crossfit_Sensors_Code_p3_ts2/data_features_extraction.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'HAR_Crossfit_Sensors_Code_p3/data_loading.py'
+ outputting to 'HAR_Crossfit_Sensors_Code_p3_ts2/data_loading.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'HAR_Crossfit_Sensors_Code_p3/data_stats.py'
+ outputting to 'HAR_Crossfit_Sensors_Code_p3_ts2/data_stats.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'HAR_Crossfit_Sensors_Code_p3/db_functions.py'
+ outputting to 'HAR_Crossfit_Sensors_Code_p3_ts2/db_functions.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'HAR_Crossfit_Sensors_Code_p3/majority_voting.py'
+ outputting to 'HAR_Crossfit_Sensors_Code_p3_ts2/majority_voting.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'HAR_Crossfit_Sensors_Code_p3/preprocessing.py'
+ outputting to 'HAR_Crossfit_Sensors_Code_p3_ts2/preprocessing.py'
+--------------------------------------------------------------------------------
+
+130:4: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+140:4: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'HAR_Crossfit_Sensors_Code_p3/print_and_plot_final_results.py'
+ outputting to 'HAR_Crossfit_Sensors_Code_p3_ts2/print_and_plot_final_results.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'HAR_Crossfit_Sensors_Code_p3/rep_counting.py'
+ outputting to 'HAR_Crossfit_Sensors_Code_p3_ts2/rep_counting.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'HAR_Crossfit_Sensors_Code_p3/results.py'
+ outputting to 'HAR_Crossfit_Sensors_Code_p3_ts2/results.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'HAR_Crossfit_Sensors_Code_p3/simple_models.py'
+ outputting to 'HAR_Crossfit_Sensors_Code_p3_ts2/simple_models.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'HAR_Crossfit_Sensors_Code_p3/unconstrained_workout_evaluation.py'
+ outputting to 'HAR_Crossfit_Sensors_Code_p3_ts2/unconstrained_workout_evaluation.py'
+--------------------------------------------------------------------------------
+
+172:16: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'HAR_Crossfit_Sensors_Code_p3/utils.py'
+ outputting to 'HAR_Crossfit_Sensors_Code_p3_ts2/utils.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+

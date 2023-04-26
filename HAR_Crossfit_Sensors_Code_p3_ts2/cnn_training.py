@@ -40,7 +40,7 @@ import tensorflow as tf
 import keras
 from keras import Sequential, Input, Model
 from keras import backend as K
-from keras.layers import Activation, Flatten, Dropout, Dense, Convolution2D, BatchNormalization, GRU
+from keras.layers import Activation, Flatten, Dropout, Dense, Convolution2D, BatchNormalization, LayerNormalization, GRU
 from tensorflow.keras.optimizers import SGD
 from keras.utils import np_utils
 
@@ -308,7 +308,7 @@ def model_RNN(input_shape,
             inner_dense_layer_neurons=100,
             n_classes=nb_classes,
             with_input_normalization=False,
-            with_batch_normalization=False
+            with_layer_normalization=False
             ):
     print(n_classes)
     K.clear_session()
@@ -316,12 +316,12 @@ def model_RNN(input_shape,
     print(("model shape is " + str(input_shape)))
 
     if with_input_normalization:
-        model.add(BatchNormalization(axis=-1))
+        model.add(LayerNormalization(axis=-1))
 
     for i in range(number_of_layers):
         model.add(GRU(hidden_state_size, return_sequences=(i != number_of_layers - 1)))
-        if with_batch_normalization:
-            model.add(BatchNormalization(axis=-1))
+        if with_layer_normalization:
+            model.add(LayerNormalization(axis=-1))
         model.add(Dropout(dropout))
 
     for i in range(dense_layers):
@@ -1068,7 +1068,7 @@ def hand_training(hyperparams=None):
     X = X[:, :, WRIST_ACCEL_X:WRIST_ROT_Z + 1, :]
     X = np.squeeze(X, axis=3)
     print((X.shape))
-    gss = GroupShuffleSplit(test_size=0.20, n_splits=1, random_state=RANDOMNESS_SEED)
+    gss = GroupShuffleSplit(test_size=0.20, n_splits=1)#, random_state=RANDOMNESS_SEED)
     for train_index, test_index in gss.split(X, Y, groups):
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = np_utils.to_categorical(Y[train_index] - 1, 10), np_utils.to_categorical(Y[test_index] - 1,
@@ -1081,7 +1081,7 @@ def hand_training(hyperparams=None):
                         dense_layers=hyperparams["dense_layers"],
                         inner_dense_layer_neurons=hyperparams["inner_dense_layer_neurons"],
                         with_input_normalization=hyperparams["with_input_normalization"],
-                        with_batch_normalization=hyperparams["with_batch_normalization"],
+                        with_layer_normalization=hyperparams["with_layer_normalization"],
                         n_classes=10)
         else:
             model = model_RNN((X_train.shape[1], X_train.shape[2]),
@@ -1576,7 +1576,7 @@ def hyperparameter_sweep_hand():
             'number_of_layers': {
                 'distribution': 'int_uniform',
                 'min': 1,
-                'max': 4
+                'max': 5
             },
             'hidden_state_size': {
                 'values': [5, 9, 18, 32, 64, 128]
@@ -1589,7 +1589,7 @@ def hyperparameter_sweep_hand():
             'dense_layers': {
                 'distribution': 'int_uniform',
                 'min': 1,
-                'max': 4
+                'max': 5
             },
             'inner_dense_layer_neurons': {
                 'distribution': 'int_uniform',
@@ -1597,10 +1597,10 @@ def hyperparameter_sweep_hand():
                 'max': 300
             },
             'with_input_normalization': {
-                'values': [True, False]
+                'values': [False, True]
             },
-            'with_batch_normalization': {
-                'values': [True, False]
+            'with_layer_normalization': {
+                'values': [False, True]
             }
         }
 

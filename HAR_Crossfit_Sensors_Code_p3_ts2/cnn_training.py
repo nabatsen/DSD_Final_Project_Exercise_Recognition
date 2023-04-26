@@ -39,7 +39,7 @@ import tensorflow as tf
 import keras
 from keras import Sequential, Input, Model
 from keras import backend as K
-from keras.layers import Activation, Flatten, Dropout, Dense, Convolution2D, BatchNormalization
+from keras.layers import Activation, Flatten, Dropout, Dense, Convolution2D, BatchNormalization, GRU
 from tensorflow.keras.optimizers import SGD
 from keras.utils import np_utils
 
@@ -126,7 +126,7 @@ class AccuracyHistory(keras.callbacks.Callback):
 
     def on_epoch_end(self, batch, logs={}):
         self.acc.append(logs.get('acc'))
-        self.val_acc.append(logs.get('val_acc'))
+        self.val_acc.append(logs.get('val_accuracy'))
 
     def on_train_end(self, logs={}):
         # f = open("./reports/report_" + start_time + ".txt", "a+")
@@ -140,7 +140,7 @@ class AccuracyHistory(keras.callbacks.Callback):
 history = AccuracyHistory()
 
 
-def early_stopping(patience=15, monitor_value='val_acc'):
+def early_stopping(patience=15, monitor_value='val_accuracy'):
     return EarlyStopping(monitor=monitor_value,
                          min_delta=0.001,
                          patience=patience,
@@ -149,7 +149,7 @@ def early_stopping(patience=15, monitor_value='val_acc'):
 
 
 def get_model_checkpoint(name="weights.best.hdf5"):
-    return ModelCheckpoint(name, save_best_only=True, monitor='val_acc', mode='max')
+    return ModelCheckpoint(name, save_best_only=True, monitor='val_accuracy', mode='max')
 
 
 def get_mem_usage():
@@ -299,6 +299,48 @@ def model_I(input_shape,
     # print()
     return model
 
+def model_RNN(input_shape,
+            number_of_layers=2,
+            hidden_state_size=9,
+            dropout_1=0.2,
+            inner_dense_layer_neurons=100,
+            n_classes=nb_classes,
+            activation_function="relu",
+            with_dropout=True,
+            with_input_normalization=False,
+            with_batch_normalization=False
+            ):
+    print(n_classes)
+    K.clear_session()
+    model = Sequential()
+    print(("model shape is " + str(input_shape)))
+
+    if with_input_normalization:
+        model.add(BatchNormalization(axis=2))
+
+    for i in range(number_of_layers):
+        model.add(GRU(hidden_state_size, return_sequences=(i != number_of_layers - 1)))
+        if with_batch_normalization:
+            model.add(BatchNormalization(axis=2))
+        if with_dropout:
+            model.add(Dropout(dropout_1))
+
+    model.add(Dense(inner_dense_layer_neurons))
+    model.add(Dense(n_classes))
+    model.add(Activation('softmax'))
+
+    # plot_model(model, show_shapes=True, to_file='model.png')
+    sgd = SGD(lr=0.0001, nesterov=True, decay=1e-6, momentum=0.9)
+    model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+    # mem = get_mem_usage()
+    # print()
+    # print()
+    # print()
+    # print('mem: {}'.format(mem))
+    # print(model.summary())
+    # print()
+    # print()
+    return model
 
 def model_I_experiment(input_shape,
                        conv_layer_1_filters=25, dropout_1=0.5,
@@ -965,7 +1007,7 @@ def exercise_vs_null_training():
                         batch_size=config.get("cnn_params")['batch_size'],
                         validation_data=(test[0], test[1]),
                         callbacks=[early_stopping()])
-    result.set_result(history.history["val_acc"])
+    result.set_result(history.history["val_accuracy"])
 
 
 def all_sensors_training(normalize_input=False):
@@ -1024,8 +1066,9 @@ def hand_training(normalize_input=False):
     X, Y, groups, persons, exercise_ids = get_grouped_windows_for_exerices(with_feature_extraction=False, config=config,
                                                                            with_null_class=False)
     X = X[:, :, WRIST_ACCEL_X:WRIST_ROT_Z + 1, :]
+    X = np.squeeze(X, axis=3)
     print((X.shape))
-    gss = GroupShuffleSplit(test_size=0.20, n_splits=5, random_state=RANDOMNESS_SEED)
+    gss = GroupShuffleSplit(test_size=0.20, n_splits=1, random_state=RANDOMNESS_SEED)
     for train_index, test_index in gss.split(X, Y, groups):
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = np_utils.to_categorical(Y[train_index] - 1, 10), np_utils.to_categorical(Y[test_index] - 1,
@@ -1033,8 +1076,7 @@ def hand_training(normalize_input=False):
         if normalize_input:
             X_train, X_test = standard_scale_data(X_train, X_test)
 
-        model = model_I((X_train.shape[1], X_train.shape[2], 1),
-                        first_layer_strides=(1, 3),
+        model = model_RNN((X_train.shape[1], X_train.shape[2], 1),
                         n_classes=10)
 
         # model = model_I_experiment(input_shape=(X_train.shape[1], X_train.shape[2], X_train.shape[3]))['model']
@@ -1471,7 +1513,7 @@ def print_rep_counting_best_params():
     for ex, params in list(best_rep_counting_params.items()):
         print(ex)
         for par_key, par_val in list(params.items()):
-            if not (par_key == 'val_acc' or par_key == 'acc'):
+            if not (par_key == 'val_accuracy' or par_key == 'acc'):
                 print(("{} : {}".format(par_key, par_val)))
 
 
@@ -1505,8 +1547,8 @@ def simple_models_grid_search():
 
 if __name__ == "__main__":  #
     # ### RECOGNTION ####
-    all_sensors_training()
-    # hand_training()
+    # all_sensors_training()
+     hand_training()
     # foot_training()
     # acc_hand_training()
     # acc_gyro_hand_training()

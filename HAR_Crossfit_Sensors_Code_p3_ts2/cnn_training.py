@@ -8,6 +8,7 @@ from keras.wrappers.scikit_learn import KerasClassifier
 from numpy import argmax
 from sklearn.model_selection import GridSearchCV, GroupShuffleSplit, LeaveOneGroupOut
 from sklearn.preprocessing import StandardScaler
+import wandb
 
 import rep_counting
 from constants import WRIST_ACCEL_X, WRIST_ACCEL_Y, WRIST_ACCEL_Z, ANKLE_ACCEL_X, ANKLE_ACCEL_Y, \
@@ -302,11 +303,10 @@ def model_I(input_shape,
 def model_RNN(input_shape,
             number_of_layers=2,
             hidden_state_size=9,
-            dropout_1=0.2,
+            dropout=0.2,
+            dense_layers=1,
             inner_dense_layer_neurons=100,
             n_classes=nb_classes,
-            activation_function="relu",
-            with_dropout=True,
             with_input_normalization=False,
             with_batch_normalization=False
             ):
@@ -316,16 +316,16 @@ def model_RNN(input_shape,
     print(("model shape is " + str(input_shape)))
 
     if with_input_normalization:
-        model.add(BatchNormalization(axis=2))
+        model.add(BatchNormalization(axis=-1))
 
     for i in range(number_of_layers):
         model.add(GRU(hidden_state_size, return_sequences=(i != number_of_layers - 1)))
         if with_batch_normalization:
-            model.add(BatchNormalization(axis=2))
-        if with_dropout:
-            model.add(Dropout(dropout_1))
+            model.add(BatchNormalization(axis=-1))
+        model.add(Dropout(dropout))
 
-    model.add(Dense(inner_dense_layer_neurons))
+    for i in range(dense_layers):
+        model.add(Dense(inner_dense_layer_neurons))
     model.add(Dense(n_classes))
     model.add(Activation('softmax'))
 
@@ -1061,7 +1061,7 @@ def all_sensors_training(normalize_input=False):
                            test_exercise_ids=test_exercises_ids)
 
 
-def hand_training(normalize_input=False):
+def hand_training(hyperparams=None):
     result = CVResult("hand_training")
     X, Y, groups, persons, exercise_ids = get_grouped_windows_for_exerices(with_feature_extraction=False, config=config,
                                                                            with_null_class=False)
@@ -1073,10 +1073,18 @@ def hand_training(normalize_input=False):
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = np_utils.to_categorical(Y[train_index] - 1, 10), np_utils.to_categorical(Y[test_index] - 1,
                                                                                                    10)
-        if normalize_input:
-            X_train, X_test = standard_scale_data(X_train, X_test)
-
-        model = model_RNN((X_train.shape[1], X_train.shape[2], 1),
+        if hyperparams:
+            model = model_RNN((X_train.shape[1], X_train.shape[2]),
+                        number_of_layers=hyperparams["number_of_layers"],
+                        hidden_state_size=hyperparams["hidden_state_size"],
+                        dropout=hyperparams["dropout"],
+                        dense_layers=hyperparams["dense_layers"],
+                        inner_dense_layer_neurons=hyperparams["inner_dense_layer_neurons"],
+                        with_input_normalization=hyperparams["with_input_normalization"],
+                        with_batch_normalization=hyperparams["with_batch_normalization"],
+                        n_classes=10)
+        else:
+            model = model_RNN((X_train.shape[1], X_train.shape[2]),
                         n_classes=10)
 
         # model = model_I_experiment(input_shape=(X_train.shape[1], X_train.shape[2], X_train.shape[3]))['model']
@@ -1093,24 +1101,32 @@ def hand_training(normalize_input=False):
         print("Testing on ")
         print((np.unique(test_people)))
         print_asterisks_lines(3)
+        callbacks = [early_stopping(patience=5), get_model_checkpoint()]
+        if hyperparams:
+            callbacks.append(wandb.keras.WandbMetricsLogger())
         history = model.fit(X_train, y_train,
                             epochs=config.get("cnn_params")['epochs'],
                             batch_size=config.get("cnn_params")['batch_size'],
                             validation_data=(X_test, y_test),
                             verbose=1,
-                            callbacks=[early_stopping(patience=5), get_model_checkpoint()])
+                            callbacks=callbacks)
         # load weights
         model.load_weights("weights.best.hdf5")
         # Compile model (required to make predictions)
         sgd = SGD(lr=0.0001, nesterov=True, decay=1e-6, momentum=0.9)
         model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
-        predicted_values = model.predict_classes(X_test)
+        predicted_values = argmax(model.predict(X_test), axis=1)
         truth_values = argmax(y_test, axis=1)
         test_exercises_ids = exercise_ids[test_index]
         # print(np.unique(predicted_values))
         # print(np.unique(truth_values))
-        result.set_results(truth_values, predicted_values, accuracy_score(truth_values, predicted_values),
-                           test_exercise_ids=test_exercises_ids)
+        accuracy = accuracy_score(truth_values, predicted_values)
+        if hyperparams:
+            metrics = {"max_val_accuracy": accuracy}
+            wandb.log(metrics)
+
+        #result.set_results(truth_values, predicted_values, accuracy_score(truth_values, predicted_values),
+        #                   test_exercise_ids=test_exercises_ids)
 
 
 def foot_training(normalize_input=False):
@@ -1542,13 +1558,68 @@ def simple_models_grid_search():
     knn_param_selection(X_features, y, groups)
     svc_param_selection(X_features, y, groups)
 
+def hyperparameter_sweep_hand():
+    sweep_id = ""
+    if not sweep_id:
+        sweep_config = {
+            'method': 'random'
+        }
+
+        metric = {
+            'name': 'max_val_accuracy',
+            'goal': 'maximize'
+        }
+
+        sweep_config['metric'] = metric
+
+        parameters_dict = {
+            'number_of_layers': {
+                'distribution': 'int_uniform',
+                'min': 1,
+                'max': 4
+            },
+            'hidden_state_size': {
+                'values': [5, 9, 18, 32, 64, 128]
+            },
+            'dropout': {
+                'distribution': 'uniform',
+                'min': 0,
+                'max': 1
+            },
+            'dense_layers': {
+                'distribution': 'int_uniform',
+                'min': 1,
+                'max': 4
+            },
+            'inner_dense_layer_neurons': {
+                'distribution': 'int_uniform',
+                'min': 100,
+                'max': 300
+            },
+            'with_input_normalization': {
+                'values': [True, False]
+            },
+            'with_batch_normalization': {
+                'values': [True, False]
+            }
+        }
+
+        sweep_config['parameters'] = parameters_dict
+        sweep_id = wandb.sweep(sweep_config, project="har_crossfit")
+
+    def hand_training_wandb():
+        with wandb.init():
+            hand_training(wandb.config)
+
+    wandb.agent(sweep_id, hand_training_wandb, count=10000)
 
 
 
 if __name__ == "__main__":  #
+    hyperparameter_sweep_hand()
     # ### RECOGNTION ####
     # all_sensors_training()
-     hand_training()
+    # hand_training()
     # foot_training()
     # acc_hand_training()
     # acc_gyro_hand_training()

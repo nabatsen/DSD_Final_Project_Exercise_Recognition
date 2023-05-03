@@ -906,8 +906,11 @@ def train_and_save_recognition_model():
 def train_and_save_recognition_model_with_non_null_class():
     X, Y, _, _, _ = get_grouped_windows_for_exerices(with_feature_extraction=False, config=config,
                                                      with_null_class=True)
+    X = X[:, :, WRIST_ACCEL_X:WRIST_ROT_Z + 1, :]
+    X = np.squeeze(X, axis=3)
     Y = np_utils.to_categorical(Y - 1, 11)
-    model = model_I((X.shape[1], X.shape[2], 1), n_classes=11)
+
+    model = model_RNN((X.shape[1], X.shape[2]), n_classes=11)
 
     if len(gpus) <= 1:
         print("[INFO] training with 1 GPU...")
@@ -918,7 +921,7 @@ def train_and_save_recognition_model_with_non_null_class():
         model = multi_gpu_model(model, gpus=len(gpus))
 
     model.fit(X, Y,
-              epochs=10,
+              epochs=30,
               batch_size=config.get("cnn_params")['batch_size'],
               verbose=1)
     model.save("./models/recognition_model_with_null.h5", save_format='h5')
@@ -1620,7 +1623,7 @@ if __name__ == "__main__":  #
     # hyperparameter_sweep_hand()
     # ### RECOGNTION ####
     # all_sensors_training()
-    hand_training()
+    # hand_training()
     # foot_training()
     # acc_hand_training()
     # acc_gyro_hand_training()
@@ -1641,5 +1644,5 @@ if __name__ == "__main__":  #
     #
     # #GENERATE MODELS TO USE ON UNCONSTRAINED WORKOUT DATA
     # train_and_save_recognition_model()
-    # train_and_save_recognition_model_with_non_null_class()
+    train_and_save_recognition_model_with_non_null_class()
     # train_and_save_repetition_counting_models()

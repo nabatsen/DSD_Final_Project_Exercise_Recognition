@@ -16,7 +16,7 @@ class Result:
         self.directory_name = "constrained_workout_results"
 
     def save_result_object(self):
-        file = open("./" + self.directory_name + "/" + self.name, "w+")
+        file = open("./" + self.directory_name + "/" + self.name, "wb+")
         now = datetime.datetime.now()
         self.last_modified = now.strftime("%Y-%m-%d %H:%M")
         pickle.dump(self, file)

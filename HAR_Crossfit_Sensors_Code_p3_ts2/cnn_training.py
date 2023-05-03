@@ -301,14 +301,14 @@ def model_I(input_shape,
     return model
 
 def model_RNN(input_shape,
-            number_of_layers=2,
-            hidden_state_size=9,
-            dropout=0.2,
-            dense_layers=1,
-            inner_dense_layer_neurons=100,
+            number_of_layers=3,
+            hidden_state_size=64,
+            dropout=0.1879,
+            dense_layers=4,
+            inner_dense_layer_neurons=123,
             n_classes=nb_classes,
             with_input_normalization=False,
-            with_layer_normalization=False
+            with_layer_normalization=True
             ):
     print(n_classes)
     K.clear_session()
@@ -1068,7 +1068,8 @@ def hand_training(hyperparams=None):
     X = X[:, :, WRIST_ACCEL_X:WRIST_ROT_Z + 1, :]
     X = np.squeeze(X, axis=3)
     print((X.shape))
-    gss = GroupShuffleSplit(test_size=0.20, n_splits=1)#, random_state=RANDOMNESS_SEED)
+    best_overall_weights_saver = get_model_checkpoint(name="weights.best_overall.hdf5")
+    gss = GroupShuffleSplit(test_size=0.20, n_splits=5, random_state=RANDOMNESS_SEED)
     for train_index, test_index in gss.split(X, Y, groups):
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = np_utils.to_categorical(Y[train_index] - 1, 10), np_utils.to_categorical(Y[test_index] - 1,
@@ -1101,7 +1102,7 @@ def hand_training(hyperparams=None):
         print("Testing on ")
         print((np.unique(test_people)))
         print_asterisks_lines(3)
-        callbacks = [early_stopping(patience=5), get_model_checkpoint()]
+        callbacks = [early_stopping(patience=5), get_model_checkpoint(), best_overall_weights_saver]
         if hyperparams:
             callbacks.append(wandb.keras.WandbMetricsLogger())
         history = model.fit(X_train, y_train,
@@ -1125,8 +1126,8 @@ def hand_training(hyperparams=None):
             metrics = {"max_val_accuracy": accuracy}
             wandb.log(metrics)
 
-        #result.set_results(truth_values, predicted_values, accuracy_score(truth_values, predicted_values),
-        #                   test_exercise_ids=test_exercises_ids)
+        result.set_results(truth_values, predicted_values, accuracy_score(truth_values, predicted_values),
+                           test_exercise_ids=test_exercises_ids)
 
 
 def foot_training(normalize_input=False):
@@ -1616,10 +1617,10 @@ def hyperparameter_sweep_hand():
 
 
 if __name__ == "__main__":  #
-    hyperparameter_sweep_hand()
+    # hyperparameter_sweep_hand()
     # ### RECOGNTION ####
     # all_sensors_training()
-    # hand_training()
+    hand_training()
     # foot_training()
     # acc_hand_training()
     # acc_gyro_hand_training()

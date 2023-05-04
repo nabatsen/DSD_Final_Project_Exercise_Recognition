@@ -638,7 +638,8 @@ def print_rep_counting_constrained_workout_results():
 
 
 if __name__ == "__main__":  #
-    plot_window_length_accuracy()
+    # plot_window_length_accuracy()
+    plot_hand_confusion_matrix()
     # print_different_different_window_length_results()
     # print_over_lap_results()
     # print_different_sensors_results()

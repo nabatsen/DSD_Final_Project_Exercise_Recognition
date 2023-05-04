@@ -100,6 +100,9 @@ def get_majority_voting_performance_values(y_truth, y_preds, exercises_ids, wind
 def convert_split_to_majority_voting(y_truth, y_preds, exercises_ids, window_length=4000, step_percentage=0.005):
     y_truth_majority = []
     y_preds_majority = []
+
+    y_truth = y_truth + 1
+    y_preds = y_preds + 1
     for ex in np.unique(exercises_ids):
         print(ex)
         indeces = np.argwhere(exercises_ids == ex)
@@ -112,4 +115,4 @@ def convert_split_to_majority_voting(y_truth, y_preds, exercises_ids, window_len
         y_truth_majority = np.concatenate((y_truth_majority, y_mv_truth))
         y_preds_majority = np.concatenate((y_preds_majority, y_mv_preds))
 
-    return (y_truth_majority, y_preds_majority)
+    return (y_truth_majority - 1, y_preds_majority - 1)

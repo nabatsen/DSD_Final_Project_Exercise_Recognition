@@ -1,0 +1,665 @@
+% This file was created with tikzplotlib v0.10.1.
+\begin{tikzpicture}
+
+\definecolor{darkgray176}{RGB}{176,176,176}
+
+\begin{axis}[
+colorbar,
+colorbar style={ylabel={}},
+colormap={mymap}{[1pt]
+  rgb(0pt)=(0.968627450980392,0.984313725490196,1);
+  rgb(1pt)=(0.870588235294118,0.92156862745098,0.968627450980392);
+  rgb(2pt)=(0.776470588235294,0.858823529411765,0.937254901960784);
+  rgb(3pt)=(0.619607843137255,0.792156862745098,0.882352941176471);
+  rgb(4pt)=(0.419607843137255,0.682352941176471,0.83921568627451);
+  rgb(5pt)=(0.258823529411765,0.572549019607843,0.776470588235294);
+  rgb(6pt)=(0.129411764705882,0.443137254901961,0.709803921568627);
+  rgb(7pt)=(0.0313725490196078,0.317647058823529,0.611764705882353);
+  rgb(8pt)=(0.0313725490196078,0.188235294117647,0.419607843137255)
+},
+point meta max=1,
+point meta min=0,
+tick align=outside,
+tick pos=left,
+title={Confusion matrix hand readings},
+x grid style={darkgray176},
+xlabel={./plots/Predicted label},
+xmin=-0.5, xmax=9.5,
+xtick style={color=black},
+xtick={0,1,2,3,4,5,6,7,8,9},
+xticklabel style={rotate=45.0},
+xticklabels={
+  Push ups,
+  Pull ups,
+  Burpees,
+  KB Deadlifts,
+  Box Jumps,
+  Squats,
+  Situps,
+  Wallballs,
+  Kb Thrusters,
+  KB Press
+},
+y dir=reverse,
+y grid style={darkgray176},
+ylabel={True label},
+ymin=-0.5, ymax=9.5,
+ytick style={color=black},
+ytick={0,1,2,3,4,5,6,7,8,9},
+yticklabels={
+  Push ups,
+  Pull ups,
+  Burpees,
+  KB Deadlifts,
+  Box Jumps,
+  Squats,
+  Situps,
+  Wallballs,
+  Kb Thrusters,
+  KB Press
+}
+]
+\addplot graphics [includegraphics cmd=\pgfimage,xmin=-0.5, xmax=9.5, ymin=9.5, ymax=-0.5] {Confusion matrix hand readings-000.png};
+\draw (axis cs:0,0) node[
+  scale=0.4,
+  anchor=base,
+  text=white,
+  rotate=0.0
+]{1.000};
+\draw (axis cs:1,0) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:2,0) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:3,0) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:4,0) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:5,0) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:6,0) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:7,0) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:8,0) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:9,0) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:0,1) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:1,1) node[
+  scale=0.4,
+  anchor=base,
+  text=white,
+  rotate=0.0
+]{1.000};
+\draw (axis cs:2,1) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:3,1) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:4,1) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:5,1) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:6,1) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:7,1) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:8,1) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:9,1) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:0,2) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:1,2) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:2,2) node[
+  scale=0.4,
+  anchor=base,
+  text=white,
+  rotate=0.0
+]{0.999};
+\draw (axis cs:3,2) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:4,2) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:5,2) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:6,2) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:7,2) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:8,2) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:9,2) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:0,3) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:1,3) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:2,3) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:3,3) node[
+  scale=0.4,
+  anchor=base,
+  text=white,
+  rotate=0.0
+]{1.000};
+\draw (axis cs:4,3) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:5,3) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:6,3) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:7,3) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:8,3) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:9,3) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:0,4) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:1,4) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:2,4) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.003};
+\draw (axis cs:3,4) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:4,4) node[
+  scale=0.4,
+  anchor=base,
+  text=white,
+  rotate=0.0
+]{0.994};
+\draw (axis cs:5,4) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.002};
+\draw (axis cs:6,4) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:7,4) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:8,4) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:9,4) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:0,5) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:1,5) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:2,5) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:3,5) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:4,5) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:5,5) node[
+  scale=0.4,
+  anchor=base,
+  text=white,
+  rotate=0.0
+]{1.000};
+\draw (axis cs:6,5) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:7,5) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:8,5) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:9,5) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:0,6) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:1,6) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:2,6) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:3,6) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:4,6) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:5,6) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:6,6) node[
+  scale=0.4,
+  anchor=base,
+  text=white,
+  rotate=0.0
+]{1.000};
+\draw (axis cs:7,6) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:8,6) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:9,6) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:0,7) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:1,7) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:2,7) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:3,7) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:4,7) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:5,7) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:6,7) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:7,7) node[
+  scale=0.4,
+  anchor=base,
+  text=white,
+  rotate=0.0
+]{1.000};
+\draw (axis cs:8,7) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:9,7) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:0,8) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:1,8) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:2,8) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:3,8) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:4,8) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:5,8) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.012};
+\draw (axis cs:6,8) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:7,8) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.055};
+\draw (axis cs:8,8) node[
+  scale=0.4,
+  anchor=base,
+  text=white,
+  rotate=0.0
+]{0.826};
+\draw (axis cs:9,8) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.107};
+\draw (axis cs:0,9) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:1,9) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.043};
+\draw (axis cs:2,9) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:3,9) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:4,9) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:5,9) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:6,9) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:7,9) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.000};
+\draw (axis cs:8,9) node[
+  scale=0.4,
+  anchor=base,
+  text=black,
+  rotate=0.0
+]{0.078};
+\draw (axis cs:9,9) node[
+  scale=0.4,
+  anchor=base,
+  text=white,
+  rotate=0.0
+]{0.878};
+\end{axis}
+
+\end{tikzpicture}

@@ -8,7 +8,7 @@ import re
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Polygon
-from matplotlib2tikz import save as tikz_save
+from tikzplotlib import save as tikz_save
 
 from constants import exercise_colors, path_plots, numpy_exercises_data_path, \
     ACCELEROMETER_CODE, ORIENTATION_CODE, READING_VALUES, READINGS_TABLE_NAME, SENSOR_TO_VAR_COUNT, path, \
@@ -295,6 +295,7 @@ def plot_free_workout(preds, step_size=0.5, with_null_class=True, participant_na
     preds = preds + coef
     y = preds
     print(y)
+    plt.figure(figsize=(20, 4))
     plt.plot(x, y, color="white")
     # for s in separators:
     #     plt.axvline(x=s, color='grey', linestyle='--')
@@ -316,7 +317,7 @@ def plot_free_workout(preds, step_size=0.5, with_null_class=True, participant_na
     plt.ylim((-coef / 2, coef * 2))
     plt.xlabel("Time [s]")
     ax.legend(loc="upper center", ncol=6)
-    plt.tight_layout()
+    #plt.tight_layout()
     if (with_null_class):
         tikz_save(path_plots + "free_workoutout_with_null_" + participant_name + ".tex")
         plt.savefig(path_plots + "free_workoutout_with_null_" + participant_name + ".png")

@@ -1644,5 +1644,5 @@ if __name__ == "__main__":  #
     #
     # #GENERATE MODELS TO USE ON UNCONSTRAINED WORKOUT DATA
     # train_and_save_recognition_model()
-    train_and_save_recognition_model_with_non_null_class()
+    # train_and_save_recognition_model_with_non_null_class()
     # train_and_save_repetition_counting_models()

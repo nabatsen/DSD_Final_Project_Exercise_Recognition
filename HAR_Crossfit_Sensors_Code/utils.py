@@ -16,7 +16,7 @@ from constants import RANDOMNESS_SEED
 
 def yaml_loader(filepath):
     with open(filepath, 'r') as file_descriptor:
-        data = yaml.load(file_descriptor)
+        data = yaml.safe_load(file_descriptor)
     return data
 
 
@@ -34,7 +34,7 @@ def get_performance_values(y_truth, y_predict):
 
 def get_random_params(params_grid):
     random_params = {}
-    for param in params_grid.keys():
+    for param in list(params_grid.keys()):
         random_params[param] = random.choice (params_grid[param])
     return random_params
 
@@ -75,7 +75,7 @@ def get_metrics(y_pred, y_true):
     }
 
     results = {}
-    for metric_name, metric_func in chosen_metrics.items():
+    for metric_name, metric_func in list(chosen_metrics.items()):
         try:
             inter_res = metric_func(y_pred, y_true)
         except Exception as ex:
@@ -120,7 +120,7 @@ def exercise_time_portion(times_list):
     total_seconds = sum_times(times_list)
     for ex_time in times_list:
         ex_time_seconds = float(int(ex_time[0:2]) * 60 * 60 + int(ex_time[2:4]) * 60 + int(ex_time[4:6]))
-        print(ex_time_seconds / total_seconds)
+        print((ex_time_seconds / total_seconds))
 
 
 def sum_times(time_lists):

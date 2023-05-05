@@ -35,7 +35,7 @@ def random_forest_randomized_search():
     rf_random = RandomizedSearchCV(estimator=rf, param_distributions=params, n_iter=n_iter_search, cv=5, verbose=2,
                                    random_state=42, n_jobs=-1)
     rf_random.fit(X, Y)
-    print(rf_random.best_params_)
+    print((rf_random.best_params_))
 
 
 def linear_regression_randomized_search():
@@ -52,7 +52,7 @@ def linear_regression_randomized_search():
     rf_random = RandomizedSearchCV(estimator=svr, param_distributions=params, n_iter=n_iter_search, cv=5, verbose=2,
                                    random_state=42, n_jobs=-1)
     rf_random.fit(X, Y)
-    print(rf_random.best_params_)
+    print((rf_random.best_params_))
 
 
 
@@ -67,10 +67,10 @@ def svc_param_selection(X, y, groups):
     means = grid_search.cv_results_['mean_test_score']
     stds = grid_search.cv_results_['std_test_score']
     for mean, std, params in zip(means, stds, grid_search.cv_results_['params']):
-        print("%0.3f (+/-%0.03f) for %r"
-              % (mean, std * 2, params))
+        print(("%0.3f (+/-%0.03f) for %r"
+              % (mean, std * 2, params)))
     print()
-    print grid_search.best_params_
+    print(grid_search.best_params_)
 
 
 def knn_param_selection(X, y, groups):
@@ -84,15 +84,15 @@ def knn_param_selection(X, y, groups):
     means = grid_search.cv_results_['mean_test_score']
     stds = grid_search.cv_results_['std_test_score']
     for mean, std, params in zip(means, stds, grid_search.cv_results_['params']):
-        print("%0.3f (+/-%0.03f) for %r"
-              % (mean, std * 2, params))
+        print(("%0.3f (+/-%0.03f) for %r"
+              % (mean, std * 2, params)))
     print()
-    print grid_search.best_params_
+    print(grid_search.best_params_)
 
 
 def random_forest_param_selection(X, y, groups):
     from sklearn.model_selection import RandomizedSearchCV
-    print "RF"
+    print("RF")
 
     # Number of trees in random forest
     n_estimators = [int(x) for x in np.linspace(start=200, stop=2000, num=10)]
@@ -126,14 +126,14 @@ def random_forest_param_selection(X, y, groups):
     means = rf_random.cv_results_['mean_test_score']
     stds = rf_random.cv_results_['std_test_score']
     for mean, std, params in zip(means, stds, rf_random.cv_results_['params']):
-        print("%0.3f (+/-%0.03f) for %r"
-              % (mean, std * 2, params))
+        print(("%0.3f (+/-%0.03f) for %r"
+              % (mean, std * 2, params)))
     print()
-    print rf_random.best_params_
+    print(rf_random.best_params_)
 
 
 def random_forest_training():
-    print "Random forset training all sensors"
+    print("Random forset training all sensors")
     _, X, Y, groups = get_grouped_windows_for_exerices(with_feature_extraction=True, config=config)
 
     rf = RandomForestRegressor(bootstrap=False, min_samples_leaf=1, n_estimators=2000, max_features='sqrt',
@@ -145,13 +145,13 @@ def random_forest_training():
         y_train, y_test = Y[train_index], Y[test_index]
         rf.fit(X_train, y_train)
         score = rf.score(X_test, y_test)
-        print score
+        print(score)
         scores.append(score)
-    print(np.mean(np.asarray(scores)))
+    print((np.mean(np.asarray(scores))))
 
 
 def random_forest_wrist_training():
-    print "Random forset training wirst"
+    print("Random forset training wirst")
     _, X, Y, groups = get_grouped_windows_for_exerices(with_feature_extraction=True, config=config,
                                                        smart_watches=["wrist"])
 
@@ -164,13 +164,13 @@ def random_forest_wrist_training():
         y_train, y_test = Y[train_index], Y[test_index]
         rf.fit(X_train, y_train)
         score = rf.score(X_test, y_test)
-        print score
+        print(score)
         scores.append(score)
-    print(np.mean(np.asarray(scores)))
+    print((np.mean(np.asarray(scores))))
 
 
 def random_forest_foot_training():
-    print "Random forset training foot"
+    print("Random forset training foot")
     _, X, Y, groups = get_grouped_windows_for_exerices(with_feature_extraction=True, config=config,
                                                        smart_watches=["foot"])
 
@@ -183,9 +183,9 @@ def random_forest_foot_training():
         y_train, y_test = Y[train_index], Y[test_index]
         rf.fit(X_train, y_train)
         score = rf.score(X_test, y_test)
-        print score
+        print(score)
         scores.append(score)
-    print(np.mean(np.asarray(scores)))
+    print((np.mean(np.asarray(scores))))
 
 
 if __name__ == "__main__":

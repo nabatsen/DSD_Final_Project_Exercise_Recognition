@@ -20,7 +20,7 @@ def anonymize_dbs():
         "SELECT * FROM {tn}".format(tn=WORKOUTS_TABLE_NAME)).fetchall())
     num = 1
     for p in participants:
-        print str(p[READING_ID]) + " " + str(p[1]) +  " " + str(num)
+        print(str(p[READING_ID]) + " " + str(p[1]) +  " " + str(num))
         c.execute(
             "UPDATE {tn} SET [participant]='{anonymous_name}' WHERE id={id} ".format(tn=WORKOUTS_TABLE_NAME,
                                                                                  id=p[READING_ID],
@@ -41,7 +41,7 @@ def check_exercises_for_participant(db, participant, position):
     ex_codes = get_exercise_codes_for_participants(db, participant)
     for code in WORKOUT:
         if code not in ex_codes:
-            print(participant + " did not perform " + EXERCISE_CODES_TO_NAME[code] + " on " + position)
+            print((participant + " did not perform " + EXERCISE_CODES_TO_NAME[code] + " on " + position))
     check_readings_for_participant(db, participant, position)
     # check that readings are there
 
@@ -51,8 +51,8 @@ def check_readings_for_participant(db, participant, position):
     for id in ex_ids:
         readings = get_readings_for_exercise(db, id)
         if readings.size == 0:
-            print(participant + " " + position + "  readings are missing for exercise " + get_exercise_name_for_id(db,
-                                                                                                                   id))
+            print((participant + " " + position + "  readings are missing for exercise " + get_exercise_name_for_id(db,
+                                                                                                                   id)))
         else:
             check_all_sensors_were_recorded(readings, participant, position, id[0])
 
@@ -61,11 +61,11 @@ def check_all_sensors_were_recorded(readings, participant, position, ex_id):
     sensor_codes = readings[:, READING_SENSOR_TYPE]
     occurences = collections.Counter(sensor_codes)
     if occurences[str(ACCELEROMETER_CODE)] == 0:
-        print(participant + " " + position + " acc numpy_data_01 is missing for ex_id " + str(ex_id))
+        print((participant + " " + position + " acc numpy_data_01 is missing for ex_id " + str(ex_id)))
     if occurences[str(GYROSCOPE_CODE)] == 0:
-        print(participant + " " + position + " gyro numpy_data_01 is missing for ex_id " + str(ex_id))
+        print((participant + " " + position + " gyro numpy_data_01 is missing for ex_id " + str(ex_id)))
     if occurences[str(ORIENTATION_CODE)] == 0:
-        print(participant + " " + position + " rot numpy_data_01 is missing for ex_id " + str(ex_id))
+        print((participant + " " + position + " rot numpy_data_01 is missing for ex_id " + str(ex_id)))
 
 
 def were_all_sensors_recorded(readings):
@@ -102,9 +102,9 @@ def interpolate_data_and_generate_numpy_arrays():
                 continue
             interpolated_exercise_readings = interpolate_readings(wrist_readings, ankle_readings)
             print(code)
-            print('shape: ' + str(interpolated_exercise_readings.shape))
+            print(('shape: ' + str(interpolated_exercise_readings.shape)))
             ex_id = get_exercises_id_for_participant_and_code(db_wrist, p[0], code)
-            print(str(code) + str(p) + " ex id " + str(ex_id))
+            print((str(code) + str(p) + " ex id " + str(ex_id)))
             save_exercise_npy(interpolated_exercise_readings, code, ex_id[0])
             single_reps_readings_wrist = get_sub_readings_from_readings_for_wrist(wrist_readings)
             single_reps_readings_ankle = derive_sub_readings_for_ankle_from_wrist(single_reps_readings_wrist,
@@ -113,7 +113,7 @@ def interpolate_data_and_generate_numpy_arrays():
                 interpolated_rep_reading = interpolate_readings(single_reps_readings_wrist[i],
                                                                 single_reps_readings_ankle[i])
                 save_rep_npy(interpolated_rep_reading, code, ex_id[0], i)
-            if p[0] not in partipant_to_exercises_codes_map.keys():
+            if p[0] not in list(partipant_to_exercises_codes_map.keys()):
                 partipant_to_exercises_codes_map[p[0]] = [ex_id[0]]
             else:
                 partipant_to_exercises_codes_map[p[0]].append(int(ex_id[0]))

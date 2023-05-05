@@ -1,12 +1,15 @@
 import numpy as np
-from keras.engine.saving import load_model
+# from keras.engine.saving import load_model
+from tensorflow.keras.models import load_model
 
 from cnn_training import TrainingRepCountingParameters
 from constants import EXERCISE_NAME_TO_CLASS_LABEL, EXERCISE_CLASS_LABEL_TO_NAME, FREE_WORKOUT_10_REPS, FREE_WORKOUT_123_SCHEME, \
-    uncontrained_workout_data
+    uncontrained_workout_data, WRIST_ACCEL_X, WRIST_ROT_Z
 from data_loading import extract_test_data, yaml_loader, load_rep_counting_models, extract_test_rep_data
 from majority_voting import convert_to_major_voting_labels
 from rep_counting import count_predicted_reps
+
+from print_and_plot_final_results import plot_free_workout
 
 config = yaml_loader("./config_cnn.yaml")
 window_length = config.get("data_params")["window_length"]
@@ -134,7 +137,7 @@ def print_results_for_free_workout(free_workout_code= FREE_WORKOUT_10_REPS):
 
     global config, model_params
     with_majority_voting = True
-    rep_counting_models = load_rep_counting_models()
+    # rep_counting_models = load_rep_counting_models()
     results = {}
     if  free_workout_code ==FREE_WORKOUT_10_REPS:
         parts = ["p1", "p2", "p3", "p4", "p5"]
@@ -154,6 +157,8 @@ def print_results_for_free_workout(free_workout_code= FREE_WORKOUT_10_REPS):
         step = 0.05
         test_windows = extract_test_data(wrist_db_file, ankle_db_file,
                                          ex_code=free_workout_code, window=window_length, step=step)
+        test_windows = test_windows[:, :, WRIST_ACCEL_X:WRIST_ROT_Z + 1, :]
+        test_windows = np.squeeze(test_windows, axis=3)
 
         for with_null_class in [True]:
 
@@ -162,7 +167,7 @@ def print_results_for_free_workout(free_workout_code= FREE_WORKOUT_10_REPS):
             else:
                 model = load_model('./models/recognition_model.h5')
 
-            preds = model.predict_classes(test_windows) + 1
+            preds = np.argmax(model.predict(test_windows), axis=1) + 1
             preds_majority = convert_to_major_voting_labels(preds, window_length, step, with_null_class=with_null_class,
                                                             with_ties=False, with_min_rep_duration_filtering=True)
             preds_majority = preds_majority[preds_majority > 0].astype(np.int)
@@ -174,10 +179,11 @@ def print_results_for_free_workout(free_workout_code= FREE_WORKOUT_10_REPS):
                        preds_majority,
                        delimiter=",")
             ## PLOT WORKOUT - uncomment the following line
-            # plot_free_workout((preds_majority), window * step, with_null_class=with_null_class, participant_name=name)
+            plot_free_workout((preds_majority), window_length * step, with_null_class=with_null_class, participant_name=participant)
 
             for seg in print_exercise_segments(preds_majority):
-                print(str(seg["label"]) + ": " + str((seg["end"] - seg["start"]) * window_length * step))
+                print((str(seg["label"]) + ": " + str((seg["end"] - seg["start"]) * window_length * step)))
+        """
         model_params = init_best_rep_counting_models_params()
         if with_majority_voting:
             recognized_exercises = segment_workout(preds_majority, window_length * step, 1)
@@ -194,12 +200,12 @@ def print_results_for_free_workout(free_workout_code= FREE_WORKOUT_10_REPS):
             preds = model.predict([rec_ex.windows])
             preds_rounded = 1 - preds.argmax(axis=1)
             results[participant].append({EXERCISE_CLASS_LABEL_TO_NAME[rec_ex.ex_code]: preds_rounded})
-            print(EXERCISE_CLASS_LABEL_TO_NAME[rec_ex.ex_code])
-            print(str(rec_ex.get_duration()))
+            print((EXERCISE_CLASS_LABEL_TO_NAME[rec_ex.ex_code]))
+            print((str(rec_ex.get_duration())))
             print(preds_rounded)
-            print(count_predicted_reps(np.copy(preds_rounded)))
+            print((count_predicted_reps(np.copy(preds_rounded)))) """
 
 
 if __name__ == "__main__":
     print_results_for_free_workout(FREE_WORKOUT_10_REPS)
-    print_results_for_free_workout(FREE_WORKOUT_123_SCHEME)
+    # print_results_for_free_workout(FREE_WORKOUT_123_SCHEME)

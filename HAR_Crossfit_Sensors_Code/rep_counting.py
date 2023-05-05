@@ -56,7 +56,7 @@ def get_left_side_zeros(preds, i):
 def get_map_mode(map):
     max = -1
     max_key = -1
-    for key, value in map.items():
+    for key, value in list(map.items()):
         if value >= max and key > max_key:
             max = value
             max_key = key
@@ -75,13 +75,13 @@ def get_stats_for_k(a, k):
             consecutives_ks += 1
             if i == len(a) - 1:
                 # we reach the end
-                if consecutives_ks in map.keys():
+                if consecutives_ks in list(map.keys()):
                     map[consecutives_ks] += 1
                 else:
                     map[consecutives_ks] = 1
         else:
             if consecutives_ks != 0:
-                if consecutives_ks in map.keys():
+                if consecutives_ks in list(map.keys()):
                     map[consecutives_ks] += 1
                 else:
                     map[consecutives_ks] = 1
@@ -90,8 +90,8 @@ def get_stats_for_k(a, k):
     mode = get_map_mode(map)
     # mode = (max(map.iteritems(), key=operator.itemgetter(1)))
 
-    min_k = min(map.iterkeys())
-    max_k = max(map.iterkeys())
+    min_k = min(map.keys())
+    max_k = max(map.keys())
     return {"min": min_k, "mode": mode, "max": max_k}
 
 
@@ -206,7 +206,7 @@ def generate_fake_data(n_samples, length):
             X[i, j:j + one_rep.shape[0]] = one_rep
             j = j + one_rep.shape[0]
             reps += 1
-        indexes = random.sample(range(0, stop), int(length * 0.02))
+        indexes = random.sample(list(range(0, stop)), int(length * 0.02))
         noisy_version = np.copy(X[i, :])
         noisy_version[indexes] = 1 - noisy_version[indexes]
         X_noisy[i, :] = noisy_version
@@ -231,7 +231,7 @@ def count_by_contraction(sequence, console_log=False):
 
 def split_per_exercise_type(sequence_labels, X, y_truth, preds, GT_of_loo_test):
     map = {}
-    for label in EXERCISE_NAME_TO_CLASS_LABEL.keys():
+    for label in list(EXERCISE_NAME_TO_CLASS_LABEL.keys()):
         if label == "Null":
             continue
         label_indexes = np.argwhere(sequence_labels == label)
@@ -255,7 +255,7 @@ def print_sequence_prediction_results(GT_of_loo_test, X, preds, sequence_labels,
     one_errors = []
     two_errors = []
     more_errors = []
-    for label in map.keys():
+    for label in list(map.keys()):
         print(label)
         # print_sequences_with_error(map[label]["X"], map[label]["y_truth"], map[label]["preds"],
         #                            map[label]["GT_of_loo_test"])
@@ -267,7 +267,7 @@ def print_sequence_prediction_results(GT_of_loo_test, X, preds, sequence_labels,
         more_errors.append(errors[3])
 
     from print_and_plot_final_results import plot_stacked_barchart
-    plot_stacked_barchart(map.keys(), zero_errors, one_errors, two_errors, more_errors)
+    plot_stacked_barchart(list(map.keys()), zero_errors, one_errors, two_errors, more_errors)
 
 
 def print_sequences_with_error(X, y_true, y_preds, GT_of_loo_test):
@@ -282,8 +282,8 @@ def print_sequences_with_error(X, y_true, y_preds, GT_of_loo_test):
         ones_mode = get_stats_for_k(X[id][X[id] >= 0], 1)["mode"]
         print_sequence_array_tight(smoothing(X[id][X[id] >= 0], mode=ones_mode, factor=0.5))
         print_sequence_array_tight(GT_of_loo_test[id][X[id] >= 0])
-        print(y_preds[id])
-        print(y_true[id])
+        print((y_preds[id]))
+        print((y_true[id]))
     # print(np.extract(X[errors_indexes][0] >= 0, X[errors_indexes][0]))
 
 
@@ -297,14 +297,14 @@ def print_stats(y, preds):
     one_errors = get_1_error_accuracy(y, preds)
     two_errors = get_2_error_accuracy(y, preds)
     more_than_2_errors = more_than_two_errors_accuracy(y, preds)
-    print(
+    print((
         "MAE: {}, MRE: {}, Max {}, mode {} out of {}, e=0:{}, e==1:{}, e==2:{}, e>2:{}".format(abs_err, rel_mean_err,
                                                                                                 max_err,
                                                                                                 mode_err,
                                                                                                 preds.shape[0],
                                                                                                 zero_errors, one_errors,
                                                                                                 two_errors,
-                                                                                                more_than_2_errors))
+                                                                                                more_than_2_errors)))
     return (zero_errors, one_errors, two_errors, more_than_2_errors)
 
 

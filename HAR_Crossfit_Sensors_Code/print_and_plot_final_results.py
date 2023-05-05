@@ -8,7 +8,7 @@ import re
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Polygon
-from matplotlib2tikz import save as tikz_save
+from tikzplotlib import save as tikz_save
 
 from constants import exercise_colors, path_plots, numpy_exercises_data_path, \
     ACCELEROMETER_CODE, ORIENTATION_CODE, READING_VALUES, READINGS_TABLE_NAME, SENSOR_TO_VAR_COUNT, path, \
@@ -54,7 +54,7 @@ def plot_confusion_matrix(cm,
     plt.rcParams.update({'font.size': 8})
     fmt = '.3f' if normalize else 'd'
     thresh = cm.max() / 2.
-    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+    for i, j in itertools.product(list(range(cm.shape[0])), list(range(cm.shape[1]))):
         plt.text(j, i, format(cm[i, j], fmt),
                  horizontalalignment="center",
                  color="white" if cm[i, j] > thresh else "black")
@@ -130,7 +130,7 @@ def plot_boxplot(data, labels=None, title=""):
     # (just use two decimal places of precision)
     pos = np.arange(numOfClasses) + 1
     weights = ['bold', 'semibold']
-    for tick, label in zip(range(numOfClasses), ax1.get_xticklabels()):
+    for tick, label in zip(list(range(numOfClasses)), ax1.get_xticklabels()):
         k = tick % 2
         ax1.text(pos[tick], top - (top * 0.05), str(np.round(np.average(data[tick]), 3)),
                  horizontalalignment='center', size=10, weight=weights[k],
@@ -295,13 +295,14 @@ def plot_free_workout(preds, step_size=0.5, with_null_class=True, participant_na
     preds = preds + coef
     y = preds
     print(y)
+    plt.figure(figsize=(20, 4))
     plt.plot(x, y, color="white")
     # for s in separators:
     #     plt.axvline(x=s, color='grey', linestyle='--')
     plt.gca().axes.get_yaxis().set_visible(False)
 
     ax = plt.gca()
-    x_axis_ticks = np.asarray(range(0, int(len(preds) * step_size), 10000))
+    x_axis_ticks = np.asarray(list(range(0, int(len(preds) * step_size), 10000)))
     plt.xticks(x_axis_ticks, seconds_to_time_string_for_array((x_axis_ticks / 1000)))
     for i in labels:
         if i == 0: continue
@@ -316,7 +317,7 @@ def plot_free_workout(preds, step_size=0.5, with_null_class=True, participant_na
     plt.ylim((-coef / 2, coef * 2))
     plt.xlabel("Time [s]")
     ax.legend(loc="upper center", ncol=6)
-    plt.tight_layout()
+    #plt.tight_layout()
     if (with_null_class):
         tikz_save(path_plots + "free_workoutout_with_null_" + participant_name + ".tex")
         plt.savefig(path_plots + "free_workoutout_with_null_" + participant_name + ".png")
@@ -341,11 +342,11 @@ def print_free_workout1_stats_per_ex():
     arr = [push_ups, pull_ups, burpees, dead_lifts, box_jumps, squats, situps, wallballs, presses, thrusters]
     i = 1
     for ex in arr:
-        print i
-        print "MAE"
-        print get_mean_absolute_error(np.array(ex[0]), np.array(ex[1]))
-        print "MRE"
-        print mean_absolute_percentage_error(np.array(ex[0]), np.array(ex[1]))
+        print(i)
+        print("MAE")
+        print(get_mean_absolute_error(np.array(ex[0]), np.array(ex[1])))
+        print("MRE")
+        print(mean_absolute_percentage_error(np.array(ex[0]), np.array(ex[1])))
         i += 1
 
 
@@ -359,11 +360,11 @@ def print_free_workout1_stats_per_participant():
     arr = [P1, P2, P3, P4, P5]
     i = 1
     for ex in arr:
-        print i
+        print(i)
 
 
-        print "MAE"
-        print get_mean_absolute_error(np.array(ex[0]), np.array(ex[1]))
+        print("MAE")
+        print(get_mean_absolute_error(np.array(ex[0]), np.array(ex[1])))
         # print "MRE"
         # print mean_absolute_percentage_error(np.array(ex[0]), np.array(ex[1]))
         i += 1
@@ -376,7 +377,7 @@ def box_plots():
     values = []
     labels = []
     per_class_performance_values = result.get_performance_values_per_class(window_length)
-    for key, value in per_class_performance_values.items():
+    for key, value in list(per_class_performance_values.items()):
         split_values = []
         for split in value:
             split_values.append(split["accuracy"])
@@ -395,8 +396,8 @@ def print_over_lap_results():
         file = open("./constrained_workout_results/" + f, 'rb')
         result = pickle.load(file)
         file.close()
-        print(result.get_grid_search_parameter_test_accuracy(with_majority_voting=True,
-                                                             window_length=window_length))
+        print((result.get_grid_search_parameter_test_accuracy(with_majority_voting=True,
+                                                             window_length=window_length)))
 
 def plot_various_sensor_results_as_bars():
     labels = ["All", "Hand", "Foot", "Hand acc.", "Hand gyro", "Hand orient.", "Hand acc + gyro"]
@@ -494,7 +495,7 @@ def print_different_sensors_results():
         file = open("./constrained_workout_results/" + f, 'rb')
         result = pickle.load(file)
         file.close()
-        print(result.get_total_test_performance_values(with_majority_voting=True, window_length=window_length))
+        print((result.get_total_test_performance_values(with_majority_voting=True, window_length=window_length)))
 
 
 def print_different_different_window_length_results():
@@ -508,7 +509,7 @@ def print_different_different_window_length_results():
         result = pickle.load(file)
         file.close()
         wl = int(f.split("_")[-3])
-        print(result.get_total_test_performance_values(with_majority_voting=True, window_length=wl)['accuracy'])
+        print((result.get_total_test_performance_values(with_majority_voting=True, window_length=wl)['accuracy']))
 
 
 
@@ -560,7 +561,7 @@ def print_constrained_workout_repcounting_truth_and_predicted_for_comparison():
         actual_rep_count = y_LOO[i/2]
         if abs(pred_rep_count - actual_rep_count)>0:
 
-            print("id: {}".format(ex_ids[i/2][0]))
+            print(("id: {}".format(ex_ids[i/2][0])))
 
 
             print("truth")
@@ -614,7 +615,7 @@ def print_rep_counting_constrained_workout_results():
             continue
         if ex_folder == "Null":
             continue
-        print ex_folder
+        print(ex_folder)
         X = np.load(constrained_workout_rep_counting_loo_results + "X_sequences_" + ex_folder+ ".npy")
         X = np.pad(X, (4, 0), 'constant', constant_values=(1,))[4:, :]
         y = np.load(constrained_workout_rep_counting_loo_results + "rep_count_per_sequence_" + ex_folder+ ".npy")
@@ -637,7 +638,8 @@ def print_rep_counting_constrained_workout_results():
 
 
 if __name__ == "__main__":  #
-    plot_window_length_accuracy()
+    # plot_window_length_accuracy()
+    plot_hand_confusion_matrix()
     # print_different_different_window_length_results()
     # print_over_lap_results()
     # print_different_sensors_results()

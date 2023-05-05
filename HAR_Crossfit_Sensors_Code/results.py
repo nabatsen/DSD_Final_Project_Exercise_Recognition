@@ -16,7 +16,7 @@ class Result:
         self.directory_name = "constrained_workout_results"
 
     def save_result_object(self):
-        file = open("./" + self.directory_name + "/" + self.name, "w+")
+        file = open("./" + self.directory_name + "/" + self.name, "wb+")
         now = datetime.datetime.now()
         self.last_modified = now.strftime("%Y-%m-%d %H:%M")
         pickle.dump(self, file)
@@ -33,7 +33,7 @@ class CVResult(Result):
 
     def set_results(self, truth_values, predicted_values, testing_accuracy, test_exercise_ids):
         print(testing_accuracy)
-        print(self.name)
+        print((self.name))
         self.truth_predicted_values_tuples.append((truth_values, predicted_values))
         self.testing_accuracies.append(testing_accuracy)
         self.test_exercise_ids.append(test_exercise_ids)
@@ -59,7 +59,7 @@ class CVResult(Result):
                                                                ex_ids[indexes], window_length, 0.05)
                 else:
                     performance_values = get_performance_values(truth_values[indexes], pred_values[indexes])
-                if cl not in performance_values_per_class.keys():
+                if cl not in list(performance_values_per_class.keys()):
                     performance_values_per_class[cl] = []
                     f1_per_class[cl] = []
                 performance_values_per_class[cl].append(performance_values)
@@ -96,7 +96,7 @@ class CVResult(Result):
             truth_values = np.concatenate((truth_values, split_truth_values))
             predicted_valeus = np.concatenate((predicted_valeus, split_pred_values))
 
-        print(get_performance_values(truth_values, predicted_valeus))
+        print((get_performance_values(truth_values, predicted_valeus)))
         cm = np.zeros((10, 10))
         for i in range(0, len(truth_values)):
             cm[int(truth_values[i]), int(predicted_valeus[i])] += 1
@@ -112,8 +112,8 @@ class CVResult(Result):
 
         for subject_id in range(len(self.truth_predicted_values_tuples)):
             subject = self.truth_predicted_values_tuples[subject_id]
-            for param in subject[0].keys():
-                if param not in per_parameter_predicted_values.keys():
+            for param in list(subject[0].keys()):
+                if param not in list(per_parameter_predicted_values.keys()):
                     per_parameter_truth_values[param] = np.asarray([])
                     per_parameter_predicted_values[param] = np.asarray([])
                     per_parameter_ids[param] = np.asarray([])
@@ -123,14 +123,14 @@ class CVResult(Result):
                     (per_parameter_predicted_values[param], subject[1][param] + 1))
                 per_parameter_ids[param] = np.concatenate(
                     (per_parameter_ids[param], self.test_exercise_ids[subject_id][param]))
-        for param in per_parameter_truth_values.keys():
+        for param in list(per_parameter_truth_values.keys()):
             if with_majority_voting:
-                print("getting majori voting perfo values for param {}".format(param))
+                print(("getting majori voting perfo values for param {}".format(param)))
                 accuracy_ = get_majority_voting_performance_values(per_parameter_truth_values[param],
                                                                        per_parameter_predicted_values[param], per_parameter_ids[param],
                                                                        window_length=window_length, step_percentage=1 - param)[
                         "accuracy"]
-                if param not in per_parameter_accuracy.keys():
+                if param not in list(per_parameter_accuracy.keys()):
                     per_parameter_accuracy[param] = []
                     per_parameter_accuracy[param].append(accuracy_)
             else:
@@ -138,7 +138,7 @@ class CVResult(Result):
                                                                per_parameter_predicted_values[param])
             per_parameter_accuracy[param] = np.mean(np.asarray(per_parameter_accuracy[param]))
             print("mean")
-            print(per_parameter_accuracy[param])
+            print((per_parameter_accuracy[param]))
         # import matplotlib.pyplot as plt
         # plt.plot(per_parameter_accuracy.keys(), per_parameter_accuracy.values())
         return per_parameter_accuracy

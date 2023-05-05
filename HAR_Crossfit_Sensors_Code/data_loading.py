@@ -2,7 +2,7 @@ import os
 import re
 import sqlite3
 
-from keras.engine.saving import load_model
+from keras.models import load_model
 from scipy.stats import mode
 
 from constants import numpy_exercises_data_path, EXERCISE_NAME_TO_CLASS_LABEL, numpy_reps_data_path, unconstrained_workout_data_path, \
@@ -88,7 +88,7 @@ def get_grouped_windows_for_exerices(with_feature_extraction,
                 exercise_ids.append(exercise_code)
 
     X = np.asarray(windows)
-    print(X.shape)
+    print((X.shape))
     Y = np.asarray(labels)
     groups = np.asarray(groups)
     persons = np.asarray(persons, dtype=object)
@@ -100,7 +100,7 @@ def get_grouped_windows_for_exerices(with_feature_extraction,
         elif "foot" not in smart_watches:
             sensor_mask[9:] = False
         X = X[:, sensor_mask, :]
-    print(X.shape)
+    print((X.shape))
     if with_feature_extraction:
         X_features = extract_features(X)
         X_features = np.nan_to_num(X_features)
@@ -165,7 +165,7 @@ def get_reps_duration_map():
         for rep_readings_file_name in reps_readings_list:
             rep_ex_id_plus_rep_num = re.sub("[^0-9]", "", rep_readings_file_name)
             rep_ex_id = int(rep_ex_id_plus_rep_num[0:3])
-            if rep_ex_id not in ex_code_to_rep_count_map.keys():
+            if rep_ex_id not in list(ex_code_to_rep_count_map.keys()):
                 rep = np.load(numpy_reps_data_path + rep_folder + "/" + rep_readings_file_name)
                 length = rep.shape[1]
                 if length < 100:
@@ -194,7 +194,7 @@ def get_min_rep_duration_map(augmentation=False):
                 len_rounded = int(50 * round(float(length) / 50))
                 if len_rounded <= 100:
                     continue
-                if rep_folder not in ex_code_to_rep_count_map.keys() or ex_code_to_rep_count_map[
+                if rep_folder not in list(ex_code_to_rep_count_map.keys()) or ex_code_to_rep_count_map[
                     rep_folder] > len_rounded:
                     if augmentation:
                         len_rounded = len_rounded / 2
@@ -384,7 +384,7 @@ def extract_test_rep_data(wrist_file, ankle_file, recognized_exercises, ex_code=
 
 def load_rep_counting_models():
     rep_counting_models = {}
-    for key, value in EXERCISE_NAME_TO_CLASS_LABEL.iteritems():
+    for key, value in EXERCISE_NAME_TO_CLASS_LABEL.items():
         if key == "Null":
             continue
         rep_counting_models[value] = load_model("models/best_rep_counting_model_" + key + ".h5")

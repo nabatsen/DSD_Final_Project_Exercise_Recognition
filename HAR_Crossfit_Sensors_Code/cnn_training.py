@@ -8,6 +8,7 @@ from keras.wrappers.scikit_learn import KerasClassifier
 from numpy import argmax
 from sklearn.model_selection import GridSearchCV, GroupShuffleSplit, LeaveOneGroupOut
 from sklearn.preprocessing import StandardScaler
+import wandb
 
 import rep_counting
 from constants import WRIST_ACCEL_X, WRIST_ACCEL_Y, WRIST_ACCEL_Z, ANKLE_ACCEL_X, ANKLE_ACCEL_Y, \
@@ -38,16 +39,17 @@ if args.gpus:
 import tensorflow as tf
 import keras
 from keras import Sequential, Input, Model
-from keras.layers import Activation, Flatten, Dropout, Dense, Convolution2D, K, BatchNormalization
-from keras.optimizers import SGD
-from keras.utils import np_utils, multi_gpu_model
+from keras import backend as K
+from keras.layers import Activation, Flatten, Dropout, Dense, Convolution2D, BatchNormalization, LayerNormalization, GRU
+from tensorflow.keras.optimizers import SGD
+from keras.utils import np_utils
 
 from data_loading import get_grouped_windows_for_exerices, get_grouped_windows_for_rep_transistion_per_exercise
-from keras.backend.tensorflow_backend import set_session
+from keras.backend import set_session
 
-tf_config = tf.ConfigProto()
+tf_config = tf.compat.v1.ConfigProto()
 tf_config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
-sess = tf.Session(config=tf_config)
+sess = tf.compat.v1.Session(config=tf_config)
 set_session(sess)  # set this TensorFlow session as the default session for Keras
 test_accuracy_over_N = []
 train_accuracy_over_N = []
@@ -125,7 +127,7 @@ class AccuracyHistory(keras.callbacks.Callback):
 
     def on_epoch_end(self, batch, logs={}):
         self.acc.append(logs.get('acc'))
-        self.val_acc.append(logs.get('val_acc'))
+        self.val_acc.append(logs.get('val_accuracy'))
 
     def on_train_end(self, logs={}):
         # f = open("./reports/report_" + start_time + ".txt", "a+")
@@ -139,7 +141,7 @@ class AccuracyHistory(keras.callbacks.Callback):
 history = AccuracyHistory()
 
 
-def early_stopping(patience=15, monitor_value='val_acc'):
+def early_stopping(patience=15, monitor_value='val_accuracy'):
     return EarlyStopping(monitor=monitor_value,
                          min_delta=0.001,
                          patience=patience,
@@ -148,7 +150,7 @@ def early_stopping(patience=15, monitor_value='val_acc'):
 
 
 def get_model_checkpoint(name="weights.best.hdf5"):
-    return ModelCheckpoint(name, save_best_only=True, monitor='val_acc', mode='max')
+    return ModelCheckpoint(name, save_best_only=True, monitor='val_accuracy', mode='max')
 
 
 def get_mem_usage():
@@ -181,7 +183,7 @@ def rep_counting_model(input_shape,
 
         conv_output = Convolution2D(filters=filters[i], kernel_size=kernel_size, strides=strides,
                                     input_shape=input_shape,
-                                    border_mode='same',
+                                    padding='same',
                                     data_format="channels_last")(input)
         act = Activation(activation_fun)(conv_output)
         if batch_normalization:
@@ -233,14 +235,14 @@ def model_I(input_shape,
     print(n_classes)
     K.clear_session()
     model = Sequential()
-    print("model shape is " + str(input_shape))
+    print(("model shape is " + str(input_shape)))
 
     if with_input_normalization:
         model.add(BatchNormalization(axis=2))
     model.add(
         Convolution2D(filters=conv_layer_1_filters, kernel_size=first_layer_kernel_size, strides=first_layer_strides,
                       input_shape=input_shape,
-                      border_mode='same',
+                      padding='same',
                       data_format="channels_last"))
     model.add(Activation(activation_function))
     if with_batch_normalization:
@@ -248,7 +250,7 @@ def model_I(input_shape,
     if with_dropout:
         model.add(Dropout(dropout_1))
     model.add(Convolution2D(filters=conv_layer_2_filters, kernel_size=(15, 18), strides=(3, 1), input_shape=input_shape,
-                            border_mode='same',
+                            padding='same',
                             data_format="channels_last"))
     model.add(Activation('relu'))
     if with_batch_normalization:
@@ -256,7 +258,7 @@ def model_I(input_shape,
     if with_dropout:
         model.add(Dropout(dropout_2))
     model.add(Convolution2D(filters=conv_layer_3_filters, kernel_size=(15, 18), strides=(3, 1), input_shape=input_shape,
-                            border_mode='same',
+                            padding='same',
                             data_format="channels_last"))
     model.add(Activation(activation_function))
     if with_batch_normalization:
@@ -264,7 +266,7 @@ def model_I(input_shape,
     if with_dropout:
         model.add(Dropout(dropout_3))
     model.add(Convolution2D(filters=conv_layer_4_filters, kernel_size=(15, 18), strides=(3, 1), input_shape=input_shape,
-                            border_mode='same',
+                            padding='same',
                             data_format="channels_last"))
     model.add(Activation(activation_function))
     if with_batch_normalization:
@@ -272,7 +274,7 @@ def model_I(input_shape,
     if with_dropout:
         model.add(Dropout(dropout_4))
     model.add(Convolution2D(filters=conv_layer_5_filters, kernel_size=(15, 18), strides=(3, 1), input_shape=input_shape,
-                            border_mode='same',
+                            padding='same',
                             data_format="channels_last"))
     model.add(Activation(activation_function))
     if with_batch_normalization:
@@ -298,6 +300,47 @@ def model_I(input_shape,
     # print()
     return model
 
+def model_RNN(input_shape,
+            number_of_layers=3,
+            hidden_state_size=64,
+            dropout=0.1879,
+            dense_layers=4,
+            inner_dense_layer_neurons=123,
+            n_classes=nb_classes,
+            with_input_normalization=False,
+            with_layer_normalization=True
+            ):
+    print(n_classes)
+    K.clear_session()
+    model = Sequential()
+    print(("model shape is " + str(input_shape)))
+
+    if with_input_normalization:
+        model.add(LayerNormalization(axis=-1))
+
+    for i in range(number_of_layers):
+        model.add(GRU(hidden_state_size, return_sequences=(i != number_of_layers - 1)))
+        if with_layer_normalization:
+            model.add(LayerNormalization(axis=-1))
+        model.add(Dropout(dropout))
+
+    for i in range(dense_layers):
+        model.add(Dense(inner_dense_layer_neurons))
+    model.add(Dense(n_classes))
+    model.add(Activation('softmax'))
+
+    # plot_model(model, show_shapes=True, to_file='model.png')
+    sgd = SGD(lr=0.0001, nesterov=True, decay=1e-6, momentum=0.9)
+    model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+    # mem = get_mem_usage()
+    # print()
+    # print()
+    # print()
+    # print('mem: {}'.format(mem))
+    # print(model.summary())
+    # print()
+    # print()
+    return model
 
 def model_I_experiment(input_shape,
                        conv_layer_1_filters=25, dropout_1=0.5,
@@ -313,13 +356,13 @@ def model_I_experiment(input_shape,
                        ):
     K.clear_session()
     model = Sequential()
-    print("model shape is " + str(input_shape))
+    print(("model shape is " + str(input_shape)))
 
     kernel_size = (15, 3)
     model.add(
         Convolution2D(filters=conv_layer_1_filters, kernel_size=kernel_size, strides=strides,
                       input_shape=input_shape,
-                      border_mode='same',
+                      padding='same',
                       data_format="channels_last"))
     model.add(Activation(activation_function))
     if dropout:
@@ -327,7 +370,7 @@ def model_I_experiment(input_shape,
     model.add(
         Convolution2D(filters=25, kernel_size=kernel_size, strides=strides,
                       input_shape=input_shape,
-                      border_mode='same',
+                      padding='same',
                       data_format="channels_last"))
     model.add(Activation(activation_function))
     if batch_normalization:
@@ -336,7 +379,7 @@ def model_I_experiment(input_shape,
         model.add(Dropout(dropout_2))
 
     model.add(Convolution2D(filters=75, kernel_size=kernel_size, strides=(3, 1), input_shape=input_shape,
-                            border_mode='same',
+                            padding='same',
                             data_format="channels_last"))
     model.add(Activation(activation_function))
     if batch_normalization:
@@ -345,7 +388,7 @@ def model_I_experiment(input_shape,
         model.add(Dropout(dropout_3))
 
     model.add(Convolution2D(filters=75, kernel_size=kernel_size, strides=(3, 1), input_shape=input_shape,
-                            border_mode='same',
+                            padding='same',
                             data_format="channels_last"))
     model.add(Activation(activation_function))
     if batch_normalization:
@@ -354,7 +397,7 @@ def model_I_experiment(input_shape,
         model.add(Dropout(dropout_3))
 
     model.add(Convolution2D(filters=25, kernel_size=kernel_size, strides=(3, 1), input_shape=input_shape,
-                            border_mode='same',
+                            padding='same',
                             data_format="channels_last"))
     model.add(Activation(activation_function))
     if batch_normalization:
@@ -377,7 +420,7 @@ def model_I_experiment(input_shape,
     print()
     print()
     print()
-    print('mem: {}'.format(mem))
+    print(('mem: {}'.format(mem)))
     # print(model.summary())
     print()
     print()
@@ -431,7 +474,7 @@ def grid_search(model, X, Y, groups):
     print("Gridsearch fit")
     grid_result = grid.fit(X, Y, groups=groups)
 
-    print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
+    print(("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_)))
     means = grid_result.cv_results_['mean_test_score']
     stds = grid_result.cv_results_['std_test_score']
     params = grid_result.cv_results_['params']
@@ -439,7 +482,7 @@ def grid_search(model, X, Y, groups):
                                                     "t", "a+")
     for mean, stdev, param in zip(means, stds, params):
         f.write("%f (%f) with: %r" % (mean, stdev, param) + "\n")
-        print("%f (%f) with: %r" % (mean, stdev, param))
+        print(("%f (%f) with: %r" % (mean, stdev, param)))
     f.close()
     return grid.best_estimator_
 
@@ -451,7 +494,7 @@ def grid_search_over_window_length():
                                                                                config=config,
                                                                                window_length=wl,
                                                                                with_null_class=False)
-        print(X.shape)
+        print((X.shape))
         gss = GroupShuffleSplit(test_size=0.20, n_splits=5, random_state=RANDOMNESS_SEED)
         for train_index, test_index in gss.split(X, Y, groups):
             X_train, X_test = X[train_index], X[test_index]
@@ -468,14 +511,14 @@ def grid_search_over_window_length():
                 print("[INFO] training with 1 GPU...")
                 # otherwise, we are compiling using multiple GPUs
             else:
-                print("[INFO] training with {} GPUs...".format(gpus))
+                print(("[INFO] training with {} GPUs...".format(gpus)))
 
                 model = multi_gpu_model(model, gpus=len(gpus))
 
             print_asterisks_lines(3)
             test_people = persons[test_index]
             print("Testing on ")
-            print(np.unique(test_people))
+            print((np.unique(test_people)))
             print_asterisks_lines(3)
             history = model.fit(X_train, y_train,
                                 epochs=config.get("cnn_params")['epochs'],
@@ -499,7 +542,7 @@ def grid_search_over_window_length():
 
 def split_train_test(X, y, groups, n_classes=nb_classes, test_size=0.1):
     gss = GroupShuffleSplit(test_size=test_size, random_state=RANDOMNESS_SEED)
-    train_indexes, test_indexes = gss.split(X, y, groups=groups).next()
+    train_indexes, test_indexes = next(gss.split(X, y, groups=groups))
     X_train = X[train_indexes]
     y_train = np_utils.to_categorical(y[train_indexes] - 1, n_classes)
     groups_train = groups[train_indexes]
@@ -547,7 +590,7 @@ def grid_search_single_rep_counting_model(model, X, Y, groups):
     print("Gridsearch fit")
     grid_result = grid.fit(X, Y, groups=groups)
 
-    print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
+    print(("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_)))
     means = grid_result.cv_results_['mean_test_score']
     stds = grid_result.cv_results_['std_test_score']
     params = grid_result.cv_results_['params']
@@ -555,7 +598,7 @@ def grid_search_single_rep_counting_model(model, X, Y, groups):
                                                     "t", "a+")
     for mean, stdev, param in zip(means, stds, params):
         f.write("%f (%f) with: %r" % (mean, stdev, param) + "\n")
-        print("%f (%f) with: %r" % (mean, stdev, param))
+        print(("%f (%f) with: %r" % (mean, stdev, param)))
     f.close()
     return grid.best_estimator_
 
@@ -564,30 +607,30 @@ def update_best_model_paramters(ex, model_params):
     print(model_params)
     files = os.listdir("./")
     print(files)
-    print("looking for {}".format(best_rep_counting_models_params_file_name))
+    print(("looking for {}".format(best_rep_counting_models_params_file_name)))
     if best_rep_counting_models_params_file_name not in files:
-        print("Best params file not found. Initialiazing it now".format(ex))
+        print(("Best params file not found. Initialiazing it now".format(ex)))
         best_counting_models_params = {}
     else:
-        print("Best params file found".format(ex))
+        print(("Best params file found".format(ex)))
         best_counting_models_params = np.load(best_rep_counting_models_params_file_name).item()
-    if ex not in best_counting_models_params.keys():
-        print("best params for {} not found, adding it now for the first time ".format(ex))
+    if ex not in list(best_counting_models_params.keys()):
+        print(("best params for {} not found, adding it now for the first time ".format(ex)))
         best_counting_models_params[ex] = model_params
     else:
-        print(" best params for {} already exist".format(ex))
+        print((" best params for {} already exist".format(ex)))
         previous_best = best_counting_models_params[ex]
         cv_scores_prev = previous_best['cv_scores']
         max_best = np.mean(cv_scores_prev)
         new_val_cv_scores = model_params['cv_scores']
         new_max = np.mean(new_val_cv_scores)
-        print("old mean is {}".format(max_best))
-        print("new mean is {}".format(new_max))
+        print(("old mean is {}".format(max_best)))
+        print(("new mean is {}".format(new_max)))
         if new_max > max_best:
-            print("new best params for {} found ".format(ex))
+            print(("new best params for {} found ".format(ex)))
             best_counting_models_params[ex] = model_params
         else:
-            print("old best params for {} are still better".format(ex))
+            print(("old best params for {} are still better".format(ex)))
 
     np.save(best_rep_counting_models_params_file_name, best_counting_models_params)
 
@@ -602,8 +645,8 @@ def rep_counting_cv(training_parameters,
     data_per_exercise = get_grouped_windows_for_rep_transistion_per_exercise(training_params=training_parameters,
                                                                              config=config,
                                                                              use_exercise_code_as_group=True)
-    for ex in data_per_exercise.keys():
-        print(training_parameters[ex])
+    for ex in list(data_per_exercise.keys()):
+        print((training_parameters[ex]))
         X, classes, Y, groups = data_per_exercise[ex]
         if normalize_input:
             X, _ = standard_scale_data(X, None)
@@ -640,7 +683,7 @@ def rep_counting_cv(training_parameters,
                 model = model_and_params["model"]
             # otherwise, we are compiling using multiple GPUs
             else:
-                print("[INFO] training with {} GPUs...".format(gpus))
+                print(("[INFO] training with {} GPUs...".format(gpus)))
 
                 # we'll store a copy of the model on *every* GPU and then combine
                 # the results from the gradient updates on the CPU
@@ -682,7 +725,7 @@ def train_and_save_repetition_counting_models(training_parameters):
                                                                              use_exercise_code_as_group=True)
     # for ex in data_per_exercise.keys():
     for ex in ["Pull ups"]:
-        print(training_parameters[ex])
+        print((training_parameters[ex]))
         X, classes, Y, groups = data_per_exercise[ex]
         if training_parameters[ex].normalize_input:
             X, _ = standard_scale_data(X, None)
@@ -721,7 +764,7 @@ def train_and_save_repetition_counting_models(training_parameters):
                 model = model_and_params["model"]
             # otherwise, we are compiling using multiple GPUs
             else:
-                print("[INFO] training with {} GPUs...".format(gpus))
+                print(("[INFO] training with {} GPUs...".format(gpus)))
 
                 # we'll store a copy of the model on *every* GPU and then combine
                 # the results from the gradient updates on the CPU
@@ -738,7 +781,7 @@ def train_and_save_repetition_counting_models(training_parameters):
             model.load_weights("best_rep_counting_params" + ex + ".best.hdf5")
             sgd = SGD(lr=0.0001, nesterov=True, decay=1e-6, momentum=0.9)
             model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
-            model.save("./models/best_rep_counting_model_" + ex + ".h5")
+            model.save("./models/best_rep_counting_model_" + ex + ".h5", save_format='h5')
             break
 
 
@@ -751,10 +794,10 @@ def generate_rep_sequences_with_LOO(training_parameters, exercises=None):
                                                                              exercises=exercises)
 
     ex_done = []
-    for ex in data_per_exercise.keys():
+    for ex in list(data_per_exercise.keys()):
         if ex not in ex_done:
             ex_done.append(ex)
-        print(training_parameters[ex])
+        print((training_parameters[ex]))
         X_sequences = []
         Y_rep_count_per_sequence = []
         exercises_ids = []
@@ -771,7 +814,7 @@ def generate_rep_sequences_with_LOO(training_parameters, exercises=None):
             print_empty_lines(3)
             print("Exs done:")
             print(ex_done)
-            print("Iteraton #{} for {}".format(str(count), ex))
+            print(("Iteraton #{} for {}".format(str(count), ex)))
             print_empty_lines(3)
             print(" ")
             X_train, X_test = X[train_index], X[test_index]
@@ -793,7 +836,7 @@ def generate_rep_sequences_with_LOO(training_parameters, exercises=None):
                 model = model_and_params["model"]
             # otherwise, we are compiling using multiple GPUs
             else:
-                print("[INFO] training with {} GPUs...".format(gpus))
+                print(("[INFO] training with {} GPUs...".format(gpus)))
 
                 # we'll store a copy of the model on *every* GPU and then combine
                 # the results from the gradient updates on the CPU
@@ -827,7 +870,7 @@ def generate_rep_sequences_with_LOO(training_parameters, exercises=None):
             print("preds")
             print(preds)
             X_sequences_np = padd_sequences(X_sequences, padding=-1)
-            print("Size of X Sequences is {}".format(str(X_sequences_np.shape)))
+            print(("Size of X Sequences is {}".format(str(X_sequences_np.shape))))
             np.save(constrained_workout_rep_counting_loo_results + "X_sequences_" + ex, X_sequences_np)
             np.save(constrained_workout_rep_counting_loo_results + "rep_count_per_sequence_" + ex, Y_rep_count_per_sequence)
             np.save(constrained_workout_rep_counting_loo_results + "exercises_ids_" + ex, exercises_ids)
@@ -850,35 +893,38 @@ def train_and_save_recognition_model():
     if len(gpus) <= 1:
         print("[INFO] training with 1 GPU...")
     else:
-        print("[INFO] training with {} GPUs...".format(gpus))
+        print(("[INFO] training with {} GPUs...".format(gpus)))
         model = multi_gpu_model(model, gpus=len(gpus))
 
     model.fit(X, Y,
               epochs=10,
               batch_size=config.get("cnn_params")['batch_size'],
               verbose=1)
-    model.save("./models/recognition_model.h5")
+    model.save("./models/recognition_model.h5", save_format='h5')
 
 
 def train_and_save_recognition_model_with_non_null_class():
     X, Y, _, _, _ = get_grouped_windows_for_exerices(with_feature_extraction=False, config=config,
                                                      with_null_class=True)
+    X = X[:, :, WRIST_ACCEL_X:WRIST_ROT_Z + 1, :]
+    X = np.squeeze(X, axis=3)
     Y = np_utils.to_categorical(Y - 1, 11)
-    model = model_I((X.shape[1], X.shape[2], 1), n_classes=11)
+
+    model = model_RNN((X.shape[1], X.shape[2]), n_classes=11)
 
     if len(gpus) <= 1:
         print("[INFO] training with 1 GPU...")
         # otherwise, we are compiling using multiple GPUs
     else:
-        print("[INFO] training with {} GPUs...".format(gpus))
+        print(("[INFO] training with {} GPUs...".format(gpus)))
 
         model = multi_gpu_model(model, gpus=len(gpus))
 
     model.fit(X, Y,
-              epochs=10,
+              epochs=30,
               batch_size=config.get("cnn_params")['batch_size'],
               verbose=1)
-    model.save("./models/recognition_model_with_null.h5")
+    model.save("./models/recognition_model_with_null.h5", save_format='h5')
 
 
 def init_best_rep_counting_models_params():
@@ -964,14 +1010,14 @@ def exercise_vs_null_training():
                         batch_size=config.get("cnn_params")['batch_size'],
                         validation_data=(test[0], test[1]),
                         callbacks=[early_stopping()])
-    result.set_result(history.history["val_acc"])
+    result.set_result(history.history["val_accuracy"])
 
 
 def all_sensors_training(normalize_input=False):
     result = CVResult("all_sensor_training")
     X, Y, groups, persons, exercise_ids = get_grouped_windows_for_exerices(with_feature_extraction=False, config=config,
                                                                            with_null_class=False)
-    print(X.shape)
+    print((X.shape))
     gss = GroupShuffleSplit(test_size=0.20, n_splits=5, random_state=RANDOMNESS_SEED)
     for train_index, test_index in gss.split(X, Y, groups):
         X_train, X_test = X[train_index], X[test_index]
@@ -989,14 +1035,14 @@ def all_sensors_training(normalize_input=False):
             print("[INFO] training with 1 GPU...")
             # otherwise, we are compiling using multiple GPUs
         else:
-            print("[INFO] training with {} GPUs...".format(gpus))
+            print(("[INFO] training with {} GPUs...".format(gpus)))
 
             model = multi_gpu_model(model, gpus=len(gpus))
 
         print_asterisks_lines(3)
         test_people = persons[test_index]
         print("Testing on ")
-        print(np.unique(test_people))
+        print((np.unique(test_people)))
         print_asterisks_lines(3)
         history = model.fit(X_train, y_train,
                             epochs=config.get("cnn_params")['epochs'],
@@ -1018,22 +1064,31 @@ def all_sensors_training(normalize_input=False):
                            test_exercise_ids=test_exercises_ids)
 
 
-def hand_training(normalize_input=False):
+def hand_training(hyperparams=None):
     result = CVResult("hand_training")
     X, Y, groups, persons, exercise_ids = get_grouped_windows_for_exerices(with_feature_extraction=False, config=config,
                                                                            with_null_class=False)
     X = X[:, :, WRIST_ACCEL_X:WRIST_ROT_Z + 1, :]
-    print(X.shape)
+    X = np.squeeze(X, axis=3)
+    print((X.shape))
+    best_overall_weights_saver = get_model_checkpoint(name="weights.best_overall.hdf5")
     gss = GroupShuffleSplit(test_size=0.20, n_splits=5, random_state=RANDOMNESS_SEED)
     for train_index, test_index in gss.split(X, Y, groups):
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = np_utils.to_categorical(Y[train_index] - 1, 10), np_utils.to_categorical(Y[test_index] - 1,
                                                                                                    10)
-        if normalize_input:
-            X_train, X_test = standard_scale_data(X_train, X_test)
-
-        model = model_I((X_train.shape[1], X_train.shape[2], 1),
-                        first_layer_strides=(1, 3),
+        if hyperparams:
+            model = model_RNN((X_train.shape[1], X_train.shape[2]),
+                        number_of_layers=hyperparams["number_of_layers"],
+                        hidden_state_size=hyperparams["hidden_state_size"],
+                        dropout=hyperparams["dropout"],
+                        dense_layers=hyperparams["dense_layers"],
+                        inner_dense_layer_neurons=hyperparams["inner_dense_layer_neurons"],
+                        with_input_normalization=hyperparams["with_input_normalization"],
+                        with_layer_normalization=hyperparams["with_layer_normalization"],
+                        n_classes=10)
+        else:
+            model = model_RNN((X_train.shape[1], X_train.shape[2]),
                         n_classes=10)
 
         # model = model_I_experiment(input_shape=(X_train.shape[1], X_train.shape[2], X_train.shape[3]))['model']
@@ -1041,31 +1096,39 @@ def hand_training(normalize_input=False):
             print("[INFO] training with 1 GPU...")
             # otherwise, we are compiling using multiple GPUs
         else:
-            print("[INFO] training with {} GPUs...".format(gpus))
+            print(("[INFO] training with {} GPUs...".format(gpus)))
 
             model = multi_gpu_model(model, gpus=len(gpus))
 
         print_asterisks_lines(3)
         test_people = persons[test_index]
         print("Testing on ")
-        print(np.unique(test_people))
+        print((np.unique(test_people)))
         print_asterisks_lines(3)
+        callbacks = [early_stopping(patience=5), get_model_checkpoint(), best_overall_weights_saver]
+        if hyperparams:
+            callbacks.append(wandb.keras.WandbMetricsLogger())
         history = model.fit(X_train, y_train,
                             epochs=config.get("cnn_params")['epochs'],
                             batch_size=config.get("cnn_params")['batch_size'],
                             validation_data=(X_test, y_test),
                             verbose=1,
-                            callbacks=[early_stopping(patience=5), get_model_checkpoint()])
+                            callbacks=callbacks)
         # load weights
         model.load_weights("weights.best.hdf5")
         # Compile model (required to make predictions)
         sgd = SGD(lr=0.0001, nesterov=True, decay=1e-6, momentum=0.9)
         model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
-        predicted_values = model.predict_classes(X_test)
+        predicted_values = argmax(model.predict(X_test), axis=1)
         truth_values = argmax(y_test, axis=1)
         test_exercises_ids = exercise_ids[test_index]
         # print(np.unique(predicted_values))
         # print(np.unique(truth_values))
+        accuracy = accuracy_score(truth_values, predicted_values)
+        if hyperparams:
+            metrics = {"max_val_accuracy": accuracy}
+            wandb.log(metrics)
+
         result.set_results(truth_values, predicted_values, accuracy_score(truth_values, predicted_values),
                            test_exercise_ids=test_exercises_ids)
 
@@ -1093,14 +1156,14 @@ def foot_training(normalize_input=False):
             print("[INFO] training with 1 GPU...")
             # otherwise, we are compiling using multiple GPUs
         else:
-            print("[INFO] training with {} GPUs...".format(gpus))
+            print(("[INFO] training with {} GPUs...".format(gpus)))
 
             model = multi_gpu_model(model, gpus=len(gpus))
 
         print_asterisks_lines(3)
         test_people = persons[test_index]
         print("Testing on ")
-        print(np.unique(test_people))
+        print((np.unique(test_people)))
         print_asterisks_lines(3)
         history = model.fit(X_train, y_train,
                             epochs=config.get("cnn_params")['epochs'],
@@ -1138,14 +1201,14 @@ def acc_hand_training():
             print("[INFO] training with 1 GPU...")
             # otherwise, we are compiling using multiple GPUs
         else:
-            print("[INFO] training with {} GPUs...".format(gpus))
+            print(("[INFO] training with {} GPUs...".format(gpus)))
 
             model = multi_gpu_model(model, gpus=len(gpus))
 
         print_asterisks_lines(3)
         test_people = persons[test_index]
         print("Testing on ")
-        print(np.unique(test_people))
+        print((np.unique(test_people)))
         print_asterisks_lines(3)
         history = model.fit(X_train, y_train,
                             epochs=config.get("cnn_params")['epochs'],
@@ -1188,14 +1251,14 @@ def gyro_hand_training():
             print("[INFO] training with 1 GPU...")
             # otherwise, we are compiling using multiple GPUs
         else:
-            print("[INFO] training with {} GPUs...".format(gpus))
+            print(("[INFO] training with {} GPUs...".format(gpus)))
 
             model = multi_gpu_model(model, gpus=len(gpus))
 
         print_asterisks_lines(3)
         test_people = persons[test_index]
         print("Testing on ")
-        print(np.unique(test_people))
+        print((np.unique(test_people)))
         print_asterisks_lines(3)
         history = model.fit(X_train, y_train,
                             epochs=config.get("cnn_params")['epochs'],
@@ -1236,14 +1299,14 @@ def acc_gyro_hand_training():
             print("[INFO] training with 1 GPU...")
             # otherwise, we are compiling using multiple GPUs
         else:
-            print("[INFO] training with {} GPUs...".format(gpus))
+            print(("[INFO] training with {} GPUs...".format(gpus)))
 
             model = multi_gpu_model(model, gpus=len(gpus))
 
         print_asterisks_lines(3)
         test_people = persons[test_index]
         print("Testing on ")
-        print(np.unique(test_people))
+        print((np.unique(test_people)))
         print_asterisks_lines(3)
         model.fit(X_train, y_train,
                   epochs=config.get("cnn_params")['epochs'],
@@ -1283,14 +1346,14 @@ def acc_gyro_training():
             print("[INFO] training with 1 GPU...")
             # otherwise, we are compiling using multiple GPUs
         else:
-            print("[INFO] training with {} GPUs...".format(gpus))
+            print(("[INFO] training with {} GPUs...".format(gpus)))
 
             model = multi_gpu_model(model, gpus=len(gpus))
 
         print_asterisks_lines(3)
         test_people = persons[test_index]
         print("Testing on ")
-        print(np.unique(test_people))
+        print((np.unique(test_people)))
         print_asterisks_lines(3)
         model.fit(X_train, y_train,
                   epochs=config.get("cnn_params")['epochs'],
@@ -1330,14 +1393,14 @@ def orientation_hand_training():
             print("[INFO] training with 1 GPU...")
             # otherwise, we are compiling using multiple GPUs
         else:
-            print("[INFO] training with {} GPUs...".format(gpus))
+            print(("[INFO] training with {} GPUs...".format(gpus)))
 
             model = multi_gpu_model(model, gpus=len(gpus))
 
         print_asterisks_lines(3)
         test_people = persons[test_index]
         print("Testing on ")
-        print(np.unique(test_people))
+        print((np.unique(test_people)))
         print_asterisks_lines(3)
         model.fit(X_train, y_train,
                             epochs=config.get("cnn_params")['epochs'],
@@ -1394,14 +1457,14 @@ def best_overlap_grid_search(wl=None):
             print("[INFO] training with 1 GPU...")
             # otherwise, we are compiling using multiple GPUs
         else:
-            print("[INFO] training with {} GPUs...".format(gpus))
+            print(("[INFO] training with {} GPUs...".format(gpus)))
 
             model = multi_gpu_model(model, gpus=len(gpus))
 
         print_asterisks_lines(3)
         test_people = persons[test_index]
         print("Testing on ")
-        print(np.unique(test_people))
+        print((np.unique(test_people)))
         print_asterisks_lines(3)
         model.fit(X_train, y_train,
                             epochs=config.get("cnn_params")['epochs'],
@@ -1467,11 +1530,11 @@ def binary_rep_sequences_training(X_train, y_train, X_test, y_test, GT_of_loo_te
 
 def print_rep_counting_best_params():
     best_rep_counting_params = np.load(best_rep_counting_models_params_file_name).item()
-    for ex, params in best_rep_counting_params.items():
+    for ex, params in list(best_rep_counting_params.items()):
         print(ex)
-        for par_key, par_val in params.items():
-            if not (par_key == 'val_acc' or par_key == 'acc'):
-                print("{} : {}".format(par_key, par_val))
+        for par_key, par_val in list(params.items()):
+            if not (par_key == 'val_accuracy' or par_key == 'acc'):
+                print(("{} : {}".format(par_key, par_val)))
 
 
 def random_search_rep_counting():
@@ -1499,12 +1562,67 @@ def simple_models_grid_search():
     knn_param_selection(X_features, y, groups)
     svc_param_selection(X_features, y, groups)
 
+def hyperparameter_sweep_hand():
+    sweep_id = ""
+    if not sweep_id:
+        sweep_config = {
+            'method': 'random'
+        }
+
+        metric = {
+            'name': 'max_val_accuracy',
+            'goal': 'maximize'
+        }
+
+        sweep_config['metric'] = metric
+
+        parameters_dict = {
+            'number_of_layers': {
+                'distribution': 'int_uniform',
+                'min': 1,
+                'max': 5
+            },
+            'hidden_state_size': {
+                'values': [5, 9, 18, 32, 64, 128]
+            },
+            'dropout': {
+                'distribution': 'uniform',
+                'min': 0,
+                'max': 1
+            },
+            'dense_layers': {
+                'distribution': 'int_uniform',
+                'min': 1,
+                'max': 5
+            },
+            'inner_dense_layer_neurons': {
+                'distribution': 'int_uniform',
+                'min': 100,
+                'max': 300
+            },
+            'with_input_normalization': {
+                'values': [False, True]
+            },
+            'with_layer_normalization': {
+                'values': [False, True]
+            }
+        }
+
+        sweep_config['parameters'] = parameters_dict
+        sweep_id = wandb.sweep(sweep_config, project="har_crossfit")
+
+    def hand_training_wandb():
+        with wandb.init():
+            hand_training(wandb.config)
+
+    wandb.agent(sweep_id, hand_training_wandb, count=10000)
 
 
 
 if __name__ == "__main__":  #
+    # hyperparameter_sweep_hand()
     # ### RECOGNTION ####
-    all_sensors_training()
+    # all_sensors_training()
     # hand_training()
     # foot_training()
     # acc_hand_training()

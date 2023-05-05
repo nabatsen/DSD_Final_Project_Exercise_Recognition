@@ -29,10 +29,10 @@ cd HAR_Crossfit_Sensors_Code/
 ## Training the model on constrained workout with 5-fold cross validation and saving the results
 Note: the results of the training are already saved in the repository, you do not have to train the model and generate the results yourself. Training might take several hours even on a GPU
 
-Despite there being many different training procedures in the original code, only `hand_training` was adapted to use the RNN model. To run it, make sure that only the `hand_training()` call is not commented in the end of the cnn_training.py and run
+Despite there being many different training procedures in the original code, only `hand_training` was adapted to use the RNN model. To run it, make sure that only the `hand_training()` call is not commented in the end of the rnn_training.py and run
 
 ```
-python cnn_training.py
+python rnn_training.py
 ```
 
 The results of the experiments are saved in a pickled object in the folder "constrained_workout_results" which is then read in the `print_and_plot_final_results.py` script.
@@ -49,7 +49,7 @@ This file will print the resulting accuracy and other metrics for the hand train
 
 Note: the trained model is already saved in the repository, you do not have to train it yourself. Training might take several hours even on a GPU
 
-In cnn_training.py uncomment the line:
+In rnn_training.py uncomment the line:
 ```
 train_and_save_recognition_model_with_non_null_class()
 ```
@@ -57,7 +57,7 @@ train_and_save_recognition_model_with_non_null_class()
 Make sure all the other calls under `if __name__ == "__main__":` are commented out and run
 
 ```
-python cnn_training.py
+python rnn_training.py
 ```
 
 This will train a model using the whole constrained workout dataset as the training data and save it into `models/recognition_model_with_null.h5` . The saved model is required to perform the evaluation on unconstrained workout.

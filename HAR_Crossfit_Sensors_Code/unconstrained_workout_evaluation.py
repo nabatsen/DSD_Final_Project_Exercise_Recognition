@@ -2,7 +2,7 @@ import numpy as np
 # from keras.engine.saving import load_model
 from tensorflow.keras.models import load_model
 
-from cnn_training import TrainingRepCountingParameters
+from rnn_training import TrainingRepCountingParameters
 from constants import EXERCISE_NAME_TO_CLASS_LABEL, EXERCISE_CLASS_LABEL_TO_NAME, FREE_WORKOUT_10_REPS, FREE_WORKOUT_123_SCHEME, \
     uncontrained_workout_data, WRIST_ACCEL_X, WRIST_ROT_Z
 from data_loading import extract_test_data, yaml_loader, load_rep_counting_models, extract_test_rep_data

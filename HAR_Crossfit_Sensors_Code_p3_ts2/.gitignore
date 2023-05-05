@@ -1,0 +1,4 @@
+__pycache__/
+wandb/
+nohup.out
+weights.best.hdf5

@@ -1,7 +1,8 @@
-tensorflow=*=*cuda*
-numpy
-scikit-learn
-psutil
-pyyaml
-matplotlib
-tikzplotlib
+tensorflow=2.6.2=*cuda*
+numpy==1.19.5
+scikit-learn==1.2.2
+psutil==5.9.0
+pyyaml==6.0
+matplotlib==3.3.2
+tikzplotlib==0.10.1
+wandb==0.13.5

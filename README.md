@@ -11,7 +11,7 @@ Conda: Version 4.11.0 was used, but any should work.
 
 Run 
 ```
-conda create --name <name_for_your_env> --file requirements.txt
+conda create --name <name_for_your_env> --file requirements.txt -c conda-forge
 ```
 
 This will create the environment and install all the dependencies needed. Do not forget to activate the environment with 

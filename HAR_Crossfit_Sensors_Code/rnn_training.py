@@ -329,6 +329,8 @@ def model_RNN(input_shape,
     model.add(Dense(n_classes))
     model.add(Activation('softmax'))
 
+    model.build((None, *input_shape))
+
     # plot_model(model, show_shapes=True, to_file='model.png')
     sgd = SGD(lr=0.0001, nesterov=True, decay=1e-6, momentum=0.9)
     model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
@@ -1090,7 +1092,7 @@ def hand_training(hyperparams=None):
         else:
             model = model_RNN((X_train.shape[1], X_train.shape[2]),
                         n_classes=10)
-
+        print(model.summary())
         # model = model_I_experiment(input_shape=(X_train.shape[1], X_train.shape[2], X_train.shape[3]))['model']
         if len(gpus) <= 1:
             print("[INFO] training with 1 GPU...")
